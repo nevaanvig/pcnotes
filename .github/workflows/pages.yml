@@ -29,5 +29,16 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+      # The artifacts API is eventually consistent: deploy-pages has read back
+      # "Found 0 artifact(s)" barely a second after a successful upload.
+      - name: Let the uploaded artifact become visible to the API
+        run: sleep 25
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Wait and retry if the artifact API lagged
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 45
+      - id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
