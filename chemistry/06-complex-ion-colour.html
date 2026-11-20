@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Interactive IB DP Chemistry HL simulation: Complex Ion Colour">
+<title>Complex Ion Colour</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: instrument console — a rail of experiments on the left, one live bench on the right. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --panel-2:#eaedf1; --ink:#131a21; --ink-2:#48545f;
+  --ink-3:#78848f; --line:#d3d8de; --accent:#0d7d78; --accent-soft:#d9efed; --on-accent:#ffffff;
+  --warn:#b05310; --warn-soft:#fae9d8; --violet:#5b4bbd; --rose:#b32a52;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1218; --panel:#161d25; --panel-2:#1d2630; --ink:#e7edf3; --ink-2:#a2afbc;
+  --ink-3:#6e7c8a; --line:#293440; --accent:#37c9bd; --accent-soft:#102e2d; --on-accent:#06211f;
+  --warn:#e49a52; --warn-soft:#2c2114; --violet:#9b8cf0; --rose:#f0718f; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1218; --panel:#161d25; --panel-2:#1d2630; --ink:#e7edf3; --ink-2:#a2afbc;
+  --ink-3:#6e7c8a; --line:#293440; --accent:#37c9bd; --accent-soft:#102e2d; --on-accent:#06211f;
+  --warn:#e49a52; --warn-soft:#2c2114; --violet:#9b8cf0; --rose:#f0718f; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);margin:0;line-height:1.5}
+h1,h2{font-weight:600;margin:0;text-wrap:balance}
+.wrap{max-width:1180px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:22px 44px}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px}
+header.top h1{font-size:1.45rem;letter-spacing:-.012em}
+header.top .sub{color:var(--ink-3);font-size:.8rem;font-family:var(--mono)}
+.lede{color:var(--ink-2);font-size:.92rem;max-width:64ch;margin:9px 0 20px}
+.console{display:grid;grid-template-columns:228px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.console{grid-template-columns:1fr;gap:14px}}
+nav.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;position:sticky;top:12px}
+@media (max-width:880px){nav.rail{position:static;display:flex;gap:6px;overflow-x:auto}}
+.rail-label{font-family:var(--mono);font-size:.62rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);padding:6px 8px 9px}
+@media (max-width:880px){.rail-label{display:none}}
+.rail button{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;
+  font-family:var(--sans);font-size:.845rem;color:var(--ink-2);padding:7px 9px;border-radius:7px;line-height:1.3}
+@media (max-width:880px){.rail button{white-space:nowrap;width:auto;flex:0 0 auto;font-size:.8rem}}
+.rail button:hover{background:var(--panel-2);color:var(--ink)}
+.rail button[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.rail button .n{font-family:var(--mono);font-size:.69rem;color:var(--ink-3);margin-right:7px}
+.rail button[aria-current="true"] .n{color:var(--accent)}
+.rail button:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible,
+.chipbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.bench h2{font-size:1.1rem;letter-spacing:-.006em}
+.tag{display:inline-block;font-family:var(--mono);font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-soft);padding:3px 7px;border-radius:4px;vertical-align:2px;margin-left:8px}
+.notice{color:var(--ink-2);font-size:.87rem;margin:9px 0 15px;max-width:68ch}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 254px;gap:16px;align-items:start}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.stage{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0}
+canvas{display:block;width:100%;touch-action:none}
+.panelbox{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.ctrl{margin-bottom:13px}
+.ctrl:last-child{margin-bottom:0}
+.ctrl label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  font-size:.78rem;color:var(--ink-2);margin-bottom:5px}
+.ctrl label .v{font-family:var(--mono);font-size:.78rem;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+select{width:100%;font-family:var(--sans);font-size:.82rem;padding:6px 8px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;font-family:var(--sans);font-size:.78rem;padding:6px 9px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.chipbtn{font-family:var(--sans);font-size:.75rem;padding:4px 8px;border-radius:5px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer}
+.chipbtn:hover{border-color:var(--accent);color:var(--accent)}
+.chiprow{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:13px}
+.rd{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px;min-width:0}
+.rd .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.rd.wide{grid-column:1/-1}
+.rd .n{font-family:var(--mono);font-size:.97rem;font-weight:500;color:var(--ink);
+  font-variant-numeric:tabular-nums;margin-top:2px;line-height:1.25;word-break:break-word}
+.rd .n small{font-size:.66rem;color:var(--ink-3);font-weight:400}
+.rd.hot .n{color:var(--warn)}
+.rd.go .n{color:var(--accent)}
+.why{margin-top:14px;padding:11px 13px;border-left:3px solid var(--accent);background:var(--accent-soft);
+  border-radius:0 7px 7px 0;font-size:.845rem;color:var(--ink-2)}
+.why b{color:var(--ink)}
+.cfgbox{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}
+.cfgline{font-family:var(--mono);font-size:.95rem;line-height:1.75;word-break:break-word;color:var(--ink)}
+.cfgline sup{font-size:.68em}
+.foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);color:var(--ink-3);font-size:.78rem;max-width:72ch}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* served standalone and inside a Notion embed box: trim the page chrome */
+html,body{margin:0;padding:0}
+.wrap{padding-block:16px 22px}
+header.top h1{font-size:1.28rem}
+.lede{font-size:.88rem;margin:7px 0 15px}
+.foot{margin-top:18px;font-size:.74rem}
+/* a Notion embed box is narrower than a browser window: keep the controls beside
+   the canvas down to 600px instead of stacking them at 760 and doubling the height */
+@media (min-width:600px){
+  .grid2{grid-template-columns:minmax(0,1fr) 232px;gap:13px}
+  .bench{padding:14px}
+}
+@media (max-width:599px){.bench{padding:13px}}
+</style></head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Complex Ion Colour</h1>
+    <span class="sub">Structure 3.1 · HL</span>
+  </header>
+  <p class="lede">Metal plus ligand sets the d-orbital splitting, the splitting sets the absorbed wavelength, and what you see is the complement.</p>
+  <main class="bench" id="bench"></main>
+  <p class="foot">Splitting estimated with the Jørgensen approximation Δ ≈ f(ligand) × g(metal) × 1000 cm⁻¹ — beyond the syllabus, but it reproduces the real numbers. Observed colour from the standard complementary-colour table.</p>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.innerHTML=x;return n};
+const cvar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt=(x,d)=>isFinite(x)?x.toFixed(d==null?2:d):"—";
+function sup(n){const m={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+  return String(n).split("").map(c=>m[c]||c).join("")}
+function sci(x,d){if(!isFinite(x)||x===0)return"0";
+  const e=Math.floor(Math.log10(Math.abs(x))),m=x/Math.pow(10,e);
+  return m.toFixed(d==null?2:d)+"×10<small>"+sup(e)+"</small>"}
+
+/* ---------- canvas plumbing ---------- */
+const painters=[];
+function stage(parent,ratio){
+  const box=el("div","stage"),c=document.createElement("canvas");
+  c.style.aspectRatio=ratio||"16/10";box.appendChild(c);parent.appendChild(box);return c}
+function ctx2d(c){
+  const dpr=window.devicePixelRatio||1,r=c.getBoundingClientRect();
+  const w=Math.max(1,r.width||320),h=Math.max(1,r.height||200);
+  c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);
+  const g=c.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+  return{g,w,h}}
+function register(fn){painters.push(fn);fn()}
+function repaintAll(){painters.forEach(f=>{try{f()}catch(e){}})}
+let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(repaintAll,90)});
+if(window.matchMedia){const mq=matchMedia("(prefers-color-scheme:dark)");
+  if(mq.addEventListener)mq.addEventListener("change",repaintAll)}
+new MutationObserver(repaintAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ---------- control builders ---------- */
+function slider(parent,o){
+  const d=el("div","ctrl"),l=el("label"),cap=el("span",null,o.label),v=el("span","v");
+  l.append(cap,v);
+  const i=document.createElement("input");
+  i.type="range";i.min=o.min;i.max=o.max;i.step=o.step;i.value=o.value;
+  i.id="r"+Math.random().toString(36).slice(2,9);
+  d.append(l,i);parent.appendChild(d);
+  const show=()=>{v.innerHTML=o.fmt?o.fmt(+i.value):i.value};
+  i.addEventListener("input",()=>{show();o.on(+i.value)});show();
+  return{box:d,input:i,label:cap,set(x){i.value=x;show()},get(){return +i.value},
+    relabel(t){cap.textContent=t}};
+}
+function picker(parent,o){
+  const d=el("div","ctrl");
+  if(o.label){const l=el("label");l.appendChild(el("span",null,o.label));d.appendChild(l)}
+  const s=document.createElement("select");s.id="s"+Math.random().toString(36).slice(2,9);
+  o.options.forEach(op=>{const n=document.createElement("option");n.value=op.v;n.textContent=op.t;s.appendChild(n)});
+  s.value=o.value;d.appendChild(s);parent.appendChild(d);
+  s.addEventListener("change",()=>o.on(s.value));
+  return{sel:s,set(x){s.value=x},get(){return s.value}};
+}
+function segmented(parent,o){
+  const d=el("div","ctrl");
+  if(o.label){const l=el("label");l.appendChild(el("span",null,o.label));d.appendChild(l)}
+  const g=el("div","seg");let cur=o.value;
+  const btns=o.options.map(op=>{
+    const b=document.createElement("button");b.type="button";b.textContent=op.t;
+    b.setAttribute("aria-pressed",String(op.v===cur));
+    b.addEventListener("click",()=>{cur=op.v;sync();o.on(cur)});
+    g.appendChild(b);return b});
+  function sync(){btns.forEach((b,i)=>b.setAttribute("aria-pressed",String(o.options[i].v===cur)))}
+  d.appendChild(g);parent.appendChild(d);
+  return{get(){return cur},set(x){cur=x;sync()}};
+}
+function readouts(parent,keys){
+  const d=el("div","readout"),map={};
+  keys.forEach(k=>{const b=el("div","rd"+(k.tone?" "+k.tone:"")+(k.wide?" wide":""));
+    b.appendChild(el("div","k",k.k));const n=el("div","n","—");b.appendChild(n);
+    d.appendChild(b);map[k.id]={n,box:b,base:"rd "+(k.tone||"")+(k.wide?" wide":"")}});
+  parent.appendChild(d);return map}
+function chips(parent,list){
+  const row=el("div","chiprow");
+  list.forEach(([t,fn])=>{const b=el("button","chipbtn",t);b.type="button";b.onclick=fn;row.appendChild(b)});
+  parent.appendChild(row);return row}
+function why(parent,html){const d=el("div","why",html);parent.appendChild(d);return d}
+
+function wl2rgb(wl){
+  let r=0,g=0,b=0;
+  if(wl>=380&&wl<440){r=-(wl-440)/60;b=1}
+  else if(wl<490){g=(wl-440)/50;b=1}
+  else if(wl<510){g=1;b=-(wl-510)/20}
+  else if(wl<580){r=(wl-510)/70;g=1}
+  else if(wl<645){r=1;g=-(wl-645)/65}
+  else if(wl<=780){r=1}
+  let f=1;
+  if(wl>=380&&wl<420)f=.3+.7*(wl-380)/40;
+  else if(wl>700&&wl<=780)f=.3+.7*(780-wl)/80;
+  const q=x=>Math.round(255*Math.pow(Math.max(0,Math.min(1,x))*f,.8));
+  return[q(r),q(g),q(b)]}
+const rgbs=a=>"rgb("+a[0]+","+a[1]+","+a[2]+")";
+/* ================ 6. COMPLEX ION COLOUR (HL) ================ */
+function simColour(root){
+  const g2=el("div","grid2");root.appendChild(g2);
+  const left=el("div");g2.appendChild(left);
+  const pan=el("div","panelbox");g2.appendChild(pan);
+  const c=stage(left,"16/9");
+  const MET={Ti3:{t:"Ti³⁺",g:20.3,d:1},V3:{t:"V³⁺",g:18.6,d:2},Cr3:{t:"Cr³⁺",g:17.4,d:3},
+    Mn2:{t:"Mn²⁺",g:8.0,d:5},Fe3:{t:"Fe³⁺",g:14.0,d:5},Fe2:{t:"Fe²⁺",g:10.0,d:6},
+    Co3:{t:"Co³⁺",g:18.2,d:6},Co2:{t:"Co²⁺",g:9.3,d:7},Ni2:{t:"Ni²⁺",g:8.9,d:8},
+    Cu2:{t:"Cu²⁺",g:12.0,d:9},Zn2:{t:"Zn²⁺",g:9.0,d:10},Sc3:{t:"Sc³⁺",g:18.0,d:0}};
+  const LIG={I:{t:"I⁻",f:.70},Br:{t:"Br⁻",f:.72},Cl:{t:"Cl⁻",f:.78},F:{t:"F⁻",f:.90},
+    OH:{t:"OH⁻",f:.94},H2O:{t:"H₂O",f:1.00},NH3:{t:"NH₃",f:1.25},
+    en:{t:"en (bidentate)",f:1.28},CN:{t:"CN⁻",f:1.70}};
+  const st={m:"Cr3",l:"H2O"};
+  const rd=readouts(pan,[{id:"d",k:"ΔE / kJ mol⁻¹"},{id:"l",k:"absorbs / nm",tone:"hot"},
+    {id:"o",k:"colour you see",tone:"go",wide:true}]);
+  const pm=picker(pan,{label:"Metal ion",value:st.m,
+    options:Object.keys(MET).map(k=>({v:k,t:MET[k].t})),on:v=>{st.m=v;upd()}});
+  const pl=picker(pan,{label:"Ligand ×6, octahedral",value:st.l,
+    options:Object.keys(LIG).map(k=>({v:k,t:LIG[k].t})),on:v=>{st.l=v;upd()}});
+  const go=(m,l)=>()=>{st.m=m;st.l=l;pm.set(m);pl.set(l);upd()};
+  chips(pan,[["[Cu(H₂O)₆]²⁺",go("Cu2","H2O")],["[Cu(NH₃)₆]²⁺",go("Cu2","NH3")],
+    ["[Ti(H₂O)₆]³⁺",go("Ti3","H2O")],["Sc³⁺ d⁰",go("Sc3","H2O")],["Zn²⁺ d¹⁰",go("Zn2","H2O")]]);
+  const note=el("div","why");root.appendChild(note);
+  /* standard absorbed → observed complementary-colour table */
+  const COMP=[[430,"yellow-green"],[480,"yellow"],[490,"orange"],[500,"red"],[560,"purple"],
+    [580,"violet"],[595,"blue"],[650,"blue-green"],[780,"green"]];
+  const seenName=l=>{for(const r of COMP)if(l<r[0])return r[1];return"green"};
+  function compute(){
+    const M=MET[st.m],L=LIG[st.l],wn=M.g*L.f*1000,lamNm=1e7/wn;
+    const dJ=6.63e-34*3.00e8/(lamNm*1e-9);
+    return{wn,lamNm,kJ:dJ*6.02e23/1000,d0:(M.d===0||M.d===10),M,L}}
+  function upd(){
+    const r=compute(),vis=r.lamNm>=380&&r.lamNm<=780;
+    rd.d.n.innerHTML=r.d0?"—":fmt(r.kJ,0);
+    rd.l.n.innerHTML=r.d0?"nothing":fmt(r.lamNm,0);
+    rd.o.n.textContent=(r.d0||!vis)?"colourless":seenName(r.lamNm);
+    note.innerHTML=r.d0
+      ?"<b>"+r.M.t+" is d"+sup(r.M.d)+".</b> With "+(r.M.d===0?"no d electrons to promote":"a full d sub-level and no vacancy to promote into")+
+       ", no visible photon can be absorbed, so the complex is colourless. These are the standard exceptions to “transition metals are coloured”."
+      :"<b>Move the ligand up the spectrochemical series</b> (I⁻ → CN⁻) and ΔE grows, so the absorbed wavelength shortens and the observed colour swings round the wheel. Try Cu²⁺ with H₂O, then with NH₃ — that is exactly the pale-blue to deep-blue change when you add ammonia to copper sulfate.";
+    paint();
+  }
+  function paint(){
+    const{g,w,h}=ctx2d(c);
+    const r=compute(),ink=cvar("--ink"),ink3=cvar("--ink-3"),line=cvar("--line"),acc=cvar("--accent");
+    const colW=Math.max(140,Math.min(236,w*.44));
+    const dx=16,dw=colW-54,midY=h*.52;
+    const gap=r.d0?26:Math.max(20,Math.min(h*.40,r.kJ*.52));
+    const eY=midY-gap*.6,tY=midY+gap*.4;
+    g.setLineDash([4,3]);g.strokeStyle=ink3;g.lineWidth=1;
+    g.beginPath();g.moveTo(dx,midY);g.lineTo(dx+dw,midY);g.stroke();g.setLineDash([]);
+    g.fillStyle=ink3;g.font="400 9.5px "+cvar("--mono");g.textAlign="left";
+    g.fillText("barycentre",dx,midY-5);
+    const seg=(y,n,col)=>{const sw=dw/(n*1.55);
+      for(let i=0;i<n;i++){const x=dx+dw/2-(n*sw*1.3)/2+i*sw*1.3;
+        g.strokeStyle=col;g.lineWidth=3.4;g.beginPath();g.moveTo(x,y);g.lineTo(x+sw,y);g.stroke()}};
+    seg(eY,2,cvar("--rose"));seg(tY,3,acc);
+    const subLabel=(main,sub,x,y,col)=>{
+      g.fillStyle=col;g.font="500 11px "+cvar("--mono");g.textAlign="left";
+      const wm=g.measureText(main).width;g.font="500 8px "+cvar("--mono");
+      const ws=g.measureText(sub).width,x0=x-(wm+ws)/2;
+      g.font="500 11px "+cvar("--mono");g.fillText(main,x0,y);
+      g.font="500 8px "+cvar("--mono");g.fillText(sub,x0+wm,y+2.5)};
+    subLabel("e","g",dx+dw/2,eY-8,cvar("--rose"));
+    subLabel("t","2g",dx+dw/2,tY+18,acc);
+    g.textAlign="center";
+    if(!r.d0){
+      const ax=dx+dw+16;
+      g.strokeStyle=ink;g.lineWidth=1.8;
+      g.beginPath();g.moveTo(ax,tY);g.lineTo(ax,eY);g.stroke();
+      [[eY,-1],[tY,1]].forEach(pr=>{g.beginPath();g.moveTo(ax,pr[0]);
+        g.lineTo(ax-4,pr[0]+6*pr[1]);g.lineTo(ax+4,pr[0]+6*pr[1]);g.closePath();g.fillStyle=ink;g.fill()});
+      g.fillStyle=ink;g.font="600 12px "+cvar("--sans");g.textAlign="left";
+      g.fillText("ΔE",ax+7,(eY+tY)/2+4);
+    }
+    const wx=colW+14,ww=w-wx-12;
+    if(ww>110){
+      const rad=Math.min(58,h*.31,ww*.26),cxx=wx+rad+6,cyy=h*.5;
+      const hexes=["#ef4444","#f97316","#facc15","#22c55e","#3b82f6","#8b5cf6"];
+      for(let i=0;i<6;i++){
+        const a1=(90+i*60)*Math.PI/180,a2=a1+Math.PI/3;
+        g.beginPath();g.moveTo(cxx,cyy);g.arc(cxx,cyy,rad,-a1,-a2,true);g.closePath();
+        g.fillStyle=hexes[i];g.fill();g.strokeStyle=cvar("--panel-2");g.lineWidth=1.4;g.stroke()}
+      g.fillStyle=cvar("--panel-2");g.beginPath();g.arc(cxx,cyy,rad*.4,0,6.283);g.fill();
+      g.fillStyle=ink3;g.font="400 9px "+cvar("--mono");g.textAlign="center";
+      g.fillText("opposite",cxx,cyy+1);g.fillText("= seen",cxx,cyy+11);
+      const bx=cxx+rad+14,bw=Math.max(40,Math.min(72,w-bx-14));
+      if(bw>36){
+        if(!r.d0&&r.lamNm>=380&&r.lamNm<=780){
+          const abs=wl2rgb(r.lamNm);
+          /* real solutions are dilute, so show the complement lightened rather than saturated */
+          const obs=abs.map(v=>Math.round(255-v*.74));
+          g.fillStyle=rgbs(abs);g.fillRect(bx,cyy-46,bw,36);
+          g.strokeStyle=line;g.lineWidth=1;g.strokeRect(bx+.5,cyy-45.5,bw-1,35);
+          g.fillStyle=rgbs(obs);g.fillRect(bx,cyy+8,bw,36);
+          g.strokeRect(bx+.5,cyy+8.5,bw-1,35);
+          g.fillStyle=ink3;g.font="400 9px "+cvar("--mono");g.textAlign="center";
+          g.fillText("absorbed",bx+bw/2,cyy-51);
+          g.fillText("observed",bx+bw/2,cyy+56);
+          g.fillStyle=cvar("--ink");g.font="600 10.5px "+cvar("--sans");
+          g.fillText(seenName(r.lamNm),bx+bw/2,cyy+69);
+        }else{
+          g.fillStyle=ink3;g.font="500 10.5px "+cvar("--sans");g.textAlign="center";
+          g.fillText(r.d0?"no d–d":"outside",bx+bw/2,cyy-4);
+          g.fillText(r.d0?"transition":"visible",bx+bw/2,cyy+11);
+        }
+      }
+    }
+    g.textAlign="left";
+  }
+  register(paint);upd();
+}
+simColour(document.getElementById("bench"));
+</script>
+</body></html>

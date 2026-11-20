@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Interactive IB DP Chemistry HL simulation: Fractional Distillation">
+<title>Fractional Distillation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: instrument console — a rail of experiments on the left, one live bench on the right. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --panel-2:#eaedf1; --ink:#131a21; --ink-2:#48545f;
+  --ink-3:#78848f; --line:#d3d8de; --accent:#0d7d78; --accent-soft:#d9efed; --on-accent:#ffffff;
+  --warn:#b05310; --warn-soft:#fae9d8; --violet:#5b4bbd; --rose:#b32a52;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1218; --panel:#161d25; --panel-2:#1d2630; --ink:#e7edf3; --ink-2:#a2afbc;
+  --ink-3:#6e7c8a; --line:#293440; --accent:#37c9bd; --accent-soft:#102e2d; --on-accent:#06211f;
+  --warn:#e49a52; --warn-soft:#2c2114; --violet:#9b8cf0; --rose:#f0718f; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1218; --panel:#161d25; --panel-2:#1d2630; --ink:#e7edf3; --ink-2:#a2afbc;
+  --ink-3:#6e7c8a; --line:#293440; --accent:#37c9bd; --accent-soft:#102e2d; --on-accent:#06211f;
+  --warn:#e49a52; --warn-soft:#2c2114; --violet:#9b8cf0; --rose:#f0718f; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);margin:0;line-height:1.5}
+h1,h2{font-weight:600;margin:0;text-wrap:balance}
+.wrap{max-width:1180px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:22px 44px}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px}
+header.top h1{font-size:1.45rem;letter-spacing:-.012em}
+header.top .sub{color:var(--ink-3);font-size:.8rem;font-family:var(--mono)}
+.lede{color:var(--ink-2);font-size:.92rem;max-width:64ch;margin:9px 0 20px}
+.console{display:grid;grid-template-columns:228px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.console{grid-template-columns:1fr;gap:14px}}
+nav.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;position:sticky;top:12px}
+@media (max-width:880px){nav.rail{position:static;display:flex;gap:6px;overflow-x:auto}}
+.rail-label{font-family:var(--mono);font-size:.62rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);padding:6px 8px 9px}
+@media (max-width:880px){.rail-label{display:none}}
+.rail button{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;
+  font-family:var(--sans);font-size:.845rem;color:var(--ink-2);padding:7px 9px;border-radius:7px;line-height:1.3}
+@media (max-width:880px){.rail button{white-space:nowrap;width:auto;flex:0 0 auto;font-size:.8rem}}
+.rail button:hover{background:var(--panel-2);color:var(--ink)}
+.rail button[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.rail button .n{font-family:var(--mono);font-size:.69rem;color:var(--ink-3);margin-right:7px}
+.rail button[aria-current="true"] .n{color:var(--accent)}
+.rail button:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible,
+.chipbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.bench h2{font-size:1.1rem;letter-spacing:-.006em}
+.tag{display:inline-block;font-family:var(--mono);font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-soft);padding:3px 7px;border-radius:4px;vertical-align:2px;margin-left:8px}
+.notice{color:var(--ink-2);font-size:.87rem;margin:9px 0 15px;max-width:68ch}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 254px;gap:16px;align-items:start}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.stage{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0}
+canvas{display:block;width:100%;touch-action:none}
+.panelbox{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.ctrl{margin-bottom:13px}
+.ctrl:last-child{margin-bottom:0}
+.ctrl label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  font-size:.78rem;color:var(--ink-2);margin-bottom:5px}
+.ctrl label .v{font-family:var(--mono);font-size:.78rem;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+select{width:100%;font-family:var(--sans);font-size:.82rem;padding:6px 8px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;font-family:var(--sans);font-size:.78rem;padding:6px 9px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.chipbtn{font-family:var(--sans);font-size:.75rem;padding:4px 8px;border-radius:5px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer}
+.chipbtn:hover{border-color:var(--accent);color:var(--accent)}
+.chiprow{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:13px}
+.rd{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px;min-width:0}
+.rd .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.rd.wide{grid-column:1/-1}
+.rd .n{font-family:var(--mono);font-size:.97rem;font-weight:500;color:var(--ink);
+  font-variant-numeric:tabular-nums;margin-top:2px;line-height:1.25;word-break:break-word}
+.rd .n small{font-size:.66rem;color:var(--ink-3);font-weight:400}
+.rd.hot .n{color:var(--warn)}
+.rd.go .n{color:var(--accent)}
+.why{margin-top:14px;padding:11px 13px;border-left:3px solid var(--accent);background:var(--accent-soft);
+  border-radius:0 7px 7px 0;font-size:.845rem;color:var(--ink-2)}
+.why b{color:var(--ink)}
+.cfgbox{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}
+.cfgline{font-family:var(--mono);font-size:.95rem;line-height:1.75;word-break:break-word;color:var(--ink)}
+.cfgline sup{font-size:.68em}
+.foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);color:var(--ink-3);font-size:.78rem;max-width:72ch}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* served standalone and inside a Notion embed box: trim the page chrome */
+html,body{margin:0;padding:0}
+.wrap{padding-block:16px 22px}
+header.top h1{font-size:1.28rem}
+.lede{font-size:.88rem;margin:7px 0 15px}
+.foot{margin-top:18px;font-size:.74rem}
+/* a Notion embed box is narrower than a browser window: keep the controls beside
+   the canvas down to 600px instead of stacking them at 760 and doubling the height */
+@media (min-width:600px){
+  .grid2{grid-template-columns:minmax(0,1fr) 232px;gap:13px}
+  .bench{padding:14px}
+}
+@media (max-width:599px){.bench{padding:13px}}
+</style></head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Fractional Distillation</h1>
+    <span class="sub">Structure 1.1</span>
+  </header>
+  <p class="lede">The column is a temperature ladder. Vapour rises until the column is cooler than its own boiling point, and that is where it comes off.</p>
+  <main class="bench" id="bench"></main>
+  <p class="foot">Boiling points are real values; crude-oil fractions are quoted at the middle of their range. The column gradient is taken as linear, which is the standard teaching simplification.</p>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.innerHTML=x;return n};
+const cvar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt=(x,d)=>isFinite(x)?x.toFixed(d==null?2:d):"—";
+function sup(n){const m={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+  return String(n).split("").map(c=>m[c]||c).join("")}
+function sci(x,d){if(!isFinite(x)||x===0)return"0";
+  const e=Math.floor(Math.log10(Math.abs(x))),m=x/Math.pow(10,e);
+  return m.toFixed(d==null?2:d)+"×10<small>"+sup(e)+"</small>"}
+
+/* ---------- canvas plumbing ---------- */
+const painters=[];
+function stage(parent,ratio){
+  const box=el("div","stage"),c=document.createElement("canvas");
+  c.style.aspectRatio=ratio||"16/10";box.appendChild(c);parent.appendChild(box);return c}
+function ctx2d(c){
+  const dpr=window.devicePixelRatio||1,r=c.getBoundingClientRect();
+  const w=Math.max(1,r.width||320),h=Math.max(1,r.height||200);
+  c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);
+  const g=c.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+  return{g,w,h}}
+function register(fn){painters.push(fn);fn()}
+function repaintAll(){painters.forEach(f=>{try{f()}catch(e){}})}
+let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(repaintAll,90)});
+if(window.matchMedia){const mq=matchMedia("(prefers-color-scheme:dark)");
+  if(mq.addEventListener)mq.addEventListener("change",repaintAll)}
+new MutationObserver(repaintAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ---------- control builders ---------- */
+function slider(parent,o){
+  const d=el("div","ctrl"),l=el("label"),cap=el("span",null,o.label),v=el("span","v");
+  l.append(cap,v);
+  const i=document.createElement("input");
+  i.type="range";i.min=o.min;i.max=o.max;i.step=o.step;i.value=o.value;
+  i.id="r"+Math.random().toString(36).slice(2,9);
+  d.append(l,i);parent.appendChild(d);
+  const show=()=>{v.innerHTML=o.fmt?o.fmt(+i.value):i.value};
+  i.addEventListener("input",()=>{show();o.on(+i.value)});show();
+  return{box:d,input:i,label:cap,set(x){i.value=x;show()},get(){return +i.value},
+    relabel(t){cap.textContent=t}};
+}
+function picker(parent,o){
+  const d=el("div","ctrl");
+  if(o.label){const l=el("label");l.appendChild(el("span",null,o.label));d.appendChild(l)}
+  const s=document.createElement("select");s.id="s"+Math.random().toString(36).slice(2,9);
+  o.options.forEach(op=>{const n=document.createElement("option");n.value=op.v;n.textContent=op.t;s.appendChild(n)});
+  s.value=o.value;d.appendChild(s);parent.appendChild(d);
+  s.addEventListener("change",()=>o.on(s.value));
+  return{sel:s,set(x){s.value=x},get(){return s.value}};
+}
+function segmented(parent,o){
+  const d=el("div","ctrl");
+  if(o.label){const l=el("label");l.appendChild(el("span",null,o.label));d.appendChild(l)}
+  const g=el("div","seg");let cur=o.value;
+  const btns=o.options.map(op=>{
+    const b=document.createElement("button");b.type="button";b.textContent=op.t;
+    b.setAttribute("aria-pressed",String(op.v===cur));
+    b.addEventListener("click",()=>{cur=op.v;sync();o.on(cur)});
+    g.appendChild(b);return b});
+  function sync(){btns.forEach((b,i)=>b.setAttribute("aria-pressed",String(o.options[i].v===cur)))}
+  d.appendChild(g);parent.appendChild(d);
+  return{get(){return cur},set(x){cur=x;sync()}};
+}
+function readouts(parent,keys){
+  const d=el("div","readout"),map={};
+  keys.forEach(k=>{const b=el("div","rd"+(k.tone?" "+k.tone:"")+(k.wide?" wide":""));
+    b.appendChild(el("div","k",k.k));const n=el("div","n","—");b.appendChild(n);
+    d.appendChild(b);map[k.id]={n,box:b,base:"rd "+(k.tone||"")+(k.wide?" wide":"")}});
+  parent.appendChild(d);return map}
+function chips(parent,list){
+  const row=el("div","chiprow");
+  list.forEach(([t,fn])=>{const b=el("button","chipbtn",t);b.type="button";b.onclick=fn;row.appendChild(b)});
+  parent.appendChild(row);return row}
+function why(parent,html){const d=el("div","why",html);parent.appendChild(d);return d}
+
+function wl2rgb(wl){
+  let r=0,g=0,b=0;
+  if(wl>=380&&wl<440){r=-(wl-440)/60;b=1}
+  else if(wl<490){g=(wl-440)/50;b=1}
+  else if(wl<510){g=1;b=-(wl-510)/20}
+  else if(wl<580){r=(wl-510)/70;g=1}
+  else if(wl<645){r=1;g=-(wl-645)/65}
+  else if(wl<=780){r=1}
+  let f=1;
+  if(wl>=380&&wl<420)f=.3+.7*(wl-380)/40;
+  else if(wl>700&&wl<=780)f=.3+.7*(780-wl)/80;
+  const q=x=>Math.round(255*Math.pow(Math.max(0,Math.min(1,x))*f,.8));
+  return[q(r),q(g),q(b)]}
+const rgbs=a=>"rgb("+a[0]+","+a[1]+","+a[2]+")";
+/* ================= S1.1 — FRACTIONAL DISTILLATION ================= */
+function simDistil(root){
+  const g2=el("div","grid2");root.appendChild(g2);
+  const left=el("div");g2.appendChild(left);
+  const pan=el("div","panelbox");g2.appendChild(pan);
+  const c=stage(left,"4/3");
+  const MIX={
+    crude:{t:"crude oil",span:460,lo:120,hi:560,start:520,unit:"°C",
+      c:[["refinery gas",25,"#d16b72"],["petrol",110,"#dd9330"],["naphtha",165,"#cdae2f"],
+         ["kerosene",230,"#4e9b53"],["diesel oil",300,"#3f8fbf"],["fuel oil",400,"#7a6bc4"],
+         ["bitumen",520,"#7b7b7b"]]},
+    etoh:{t:"ethanol + water",span:34,lo:74,hi:112,start:92,unit:"°C",
+      c:[["ethanol",78,"#3f8fbf"],["water",100,"#4e9b53"]]},
+    air:{t:"liquid air",span:22,lo:-200,hi:-176,start:-181,unit:"°C",
+      c:[["nitrogen",-196,"#3f8fbf"],["argon",-186,"#7a6bc4"],["oxygen",-183,"#dd7330"]]}
+  };
+  const st={m:"crude",T:520};
+  const rd=readouts(pan,[{id:"top",k:"top of column",tone:"go"},
+    {id:"out",k:"leaves at the top",wide:true},{id:"flask",k:"never vaporises",tone:"hot",wide:true}]);
+  picker(pan,{label:"Mixture",value:st.m,
+    options:Object.keys(MIX).map(k=>({v:k,t:MIX[k].t})),on:v=>{st.m=v;st.T=MIX[v].start;rebuild()}});
+  const holder=el("div");pan.appendChild(holder);
+  const note=el("div","why");root.appendChild(note);
+  let sT;
+  function rebuild(){
+    holder.innerHTML="";const M=MIX[st.m];
+    sT=slider(holder,{label:"Temperature at the base",min:M.lo,max:M.hi,step:1,value:st.T,
+      fmt:x=>x+" "+M.unit,on:v=>{st.T=v;upd()}});
+    upd();
+  }
+  const Ttop=()=>st.T-MIX[st.m].span;
+  function upd(){
+    const M=MIX[st.m],tt=Ttop();
+    rd.top.n.innerHTML=fmt(tt,0)+"<small> "+M.unit+"</small>";
+    const out=M.c.filter(k=>k[1]<=tt).map(k=>k[0]);
+    const stuck=M.c.filter(k=>k[1]>=st.T).map(k=>k[0]);
+    rd.out.n.textContent=out.length?out.join(", "):"nothing — raise the heat";
+    rd.flask.n.textContent=stuck.length?stuck.join(", "):"everything vaporises";
+    note.innerHTML="<b>The column is a temperature ladder.</b> Vapour rises until it reaches the height where the column is cooler than its own boiling point, and there it condenses and runs back down. "+
+      "A low boiling point means the vapour survives higher up, so the most volatile fraction is tapped off at the top and the least volatile never leaves the base at all. "+
+      "Raise the base temperature and every band shifts upward — that is why a refinery controls the gradient rather than the boiling itself. "+
+      (st.m==="etoh"?"Ethanol and water are only 22 °C apart, which is why this one needs a tall packed column and still never reaches 100% ethanol."
+       :st.m==="air"?"Nitrogen, oxygen and argon sit within 13 °C of each other, so this is done in a column tens of metres tall."
+       :"The crude-oil fractions are not pure compounds but <i>ranges</i> of chain lengths — longer chains mean stronger London forces and a higher boiling point.");
+    paint();
+  }
+  function paint(){
+    const{g,w,h}=ctx2d(c);
+    const M=MIX[st.m],ink=cvar("--ink"),ink2=cvar("--ink-2"),ink3=cvar("--ink-3"),line=cvar("--line");
+    const colW=Math.min(96,w*.26),cx=Math.min(w*.32,150);
+    const top=26,bot=h-66,H=bot-top;
+    const tt=Ttop(),Yof=T=>bot-H*(st.T-T)/M.span;
+    const grad=g.createLinearGradient(0,top,0,bot);
+    grad.addColorStop(0,"rgba(90,150,220,.30)");grad.addColorStop(.5,"rgba(205,174,47,.28)");
+    grad.addColorStop(1,"rgba(209,107,114,.40)");
+    g.fillStyle=grad;g.fillRect(cx-colW/2,top,colW,H);
+    g.strokeStyle=ink3;g.lineWidth=1.8;g.strokeRect(cx-colW/2+.5,top+.5,colW-1,H-1);
+    for(let i=1;i<14;i++){const y=top+H*i/14;
+      g.strokeStyle=line;g.globalAlpha=.8;g.lineWidth=1;
+      g.beginPath();g.moveTo(cx-colW/2+3,y);g.lineTo(cx+colW/2-3,y-4);g.stroke();g.globalAlpha=1}
+    g.fillStyle=ink3;g.font="400 10px "+cvar("--mono");g.textAlign="right";
+    g.fillText(fmt(tt,0)+M.unit,cx-colW/2-8,top+10);
+    g.fillText(fmt(st.T,0)+M.unit,cx-colW/2-8,bot-2);
+    g.fillStyle=ink2;g.font="500 10.5px "+cvar("--sans");
+    g.fillText("cool",cx-colW/2-8,top+24);g.fillText("hot",cx-colW/2-8,bot-16);
+    const lx=cx+colW/2+14;
+    /* where each fraction physically sits, then a separate de-collided y for its label */
+    const rows=M.c.map(k=>{const esc=k[1]<=tt,stuck=k[1]>=st.T;
+      return{k:k,esc:esc,stuck:stuck,y:esc?top+7:(stuck?bot-7:Yof(k[1]))}});
+    const ord=rows.slice().sort((a,b)=>a.y-b.y);
+    let prev=-1e9;
+    ord.forEach(r=>{r.ly=Math.max(r.y,prev+21);prev=r.ly});
+    const over=ord.length?ord[ord.length-1].ly-(bot+4):0;
+    if(over>0)ord.forEach(r=>{r.ly-=over});
+    rows.forEach(r=>{
+      const k=r.k;
+      g.strokeStyle=k[2];g.lineWidth=2.6;
+      g.beginPath();g.moveTo(cx-colW/2,r.y);g.lineTo(cx+colW/2,r.y);g.stroke();
+      g.strokeStyle=k[2];g.lineWidth=1.3;
+      g.beginPath();g.moveTo(cx+colW/2,r.y);g.lineTo(lx-6,r.ly-4);g.stroke();
+      g.fillStyle=k[2];g.beginPath();g.arc(lx-6,r.ly-4,3.5,0,6.283);g.fill();
+      if(lx+70<w){
+        g.fillStyle=r.esc?k[2]:(r.stuck?ink3:ink2);
+        g.font=(r.esc?"600 ":"500 ")+"11px "+cvar("--sans");g.textAlign="left";
+        g.fillText(k[0],lx+2,r.ly-1);
+        g.fillStyle=ink3;g.font="400 9.5px "+cvar("--mono");
+        g.fillText("bp "+k[1]+M.unit+(r.esc?"  → collected":(r.stuck?"  → stays behind":"")),lx+2,r.ly+11);
+      }
+      if(r.esc){g.strokeStyle=k[2];g.lineWidth=1.6;
+        g.beginPath();g.moveTo(cx,top);g.lineTo(cx,top-13);g.stroke();
+        g.beginPath();g.moveTo(cx,top-18);g.lineTo(cx-5,top-9);g.lineTo(cx+5,top-9);
+        g.closePath();g.fillStyle=k[2];g.fill()}
+    });
+    /* flask and burner */
+    const fy=bot+40;
+    g.strokeStyle=ink3;g.lineWidth=1.8;
+    g.beginPath();g.moveTo(cx-10,bot);g.lineTo(cx-10,fy-22);g.stroke();
+    g.beginPath();g.moveTo(cx+10,bot);g.lineTo(cx+10,fy-22);g.stroke();
+    g.beginPath();g.arc(cx,fy,24,-Math.PI*.42,Math.PI*1.42,false);g.stroke();
+    g.fillStyle=cvar("--warn");g.globalAlpha=.35;
+    g.beginPath();g.arc(cx,fy,22,.3,Math.PI-.3,false);g.fill();g.globalAlpha=1;
+    g.fillStyle=cvar("--warn");g.beginPath();
+    g.moveTo(cx,fy+26);g.quadraticCurveTo(cx-9,fy+14,cx,fy+1);
+    g.quadraticCurveTo(cx+9,fy+14,cx,fy+26);g.fill();
+    g.fillStyle=cvar("--ink-3");g.font="500 10px "+cvar("--sans");g.textAlign="center";
+    g.fillText("heat",cx,fy+40);
+    g.textAlign="left";
+  }
+  register(paint);rebuild();
+}
+simDistil(document.getElementById("bench"));
+</script>
+</body></html>

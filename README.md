@@ -17,3 +17,24 @@ alongside a set of DP Physics notes.
 
 Each file is plain HTML, CSS and canvas JavaScript with no dependencies and no build step.
 They work offline, follow the system light/dark theme, and embed cleanly in Notion.
+
+## Chemistry
+
+Interactive simulations for IB DP Chemistry HL, under `chemistry/`.
+Structure 1.1&ndash;1.5, 2.2&ndash;2.4, 3.1 HL and Reactivity 2.1 / 3.1 HL.
+Same approach as the physics set: one self-contained HTML file each, no dependencies,
+every value computed live from the underlying relationship.
+
+- `chemistry/01-gases.html` — Ideal  Real Gases
+- `chemistry/02-maxwell-boltzmann.html` — MaxwellBoltzmann Distribution
+- `chemistry/03-electron-configuration.html` — Electron Configuration
+- `chemistry/04-hydrogen-spectrum.html` — Hydrogen Emission Spectrum
+- `chemistry/05-vsepr.html` — VSEPR Shape Explorer
+- `chemistry/06-complex-ion-colour.html` — Complex Ion Colour
+- `chemistry/07-titration.html` — AcidBase Titration
+- `chemistry/08-bonding-triangle.html` — Van ArkelKetelaar Triangle
+- `chemistry/09-limiting-reactant.html` — Limiting  Excess Reactant
+- `chemistry/10-isotopes-ar.html` — Isotopes and A
+- `chemistry/11-separation-techniques.html` — Separation Techniques
+- `chemistry/12-chromatography.html` — Paper Chromatography
+- `chemistry/13-fractional-distillation.html` — Fractional Distillation

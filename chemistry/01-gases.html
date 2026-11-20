@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Interactive IB DP Chemistry HL simulation: Ideal & Real Gases">
+<title>Ideal & Real Gases</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: instrument console — a rail of experiments on the left, one live bench on the right. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --panel-2:#eaedf1; --ink:#131a21; --ink-2:#48545f;
+  --ink-3:#78848f; --line:#d3d8de; --accent:#0d7d78; --accent-soft:#d9efed; --on-accent:#ffffff;
+  --warn:#b05310; --warn-soft:#fae9d8; --violet:#5b4bbd; --rose:#b32a52;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1218; --panel:#161d25; --panel-2:#1d2630; --ink:#e7edf3; --ink-2:#a2afbc;
+  --ink-3:#6e7c8a; --line:#293440; --accent:#37c9bd; --accent-soft:#102e2d; --on-accent:#06211f;
+  --warn:#e49a52; --warn-soft:#2c2114; --violet:#9b8cf0; --rose:#f0718f; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1218; --panel:#161d25; --panel-2:#1d2630; --ink:#e7edf3; --ink-2:#a2afbc;
+  --ink-3:#6e7c8a; --line:#293440; --accent:#37c9bd; --accent-soft:#102e2d; --on-accent:#06211f;
+  --warn:#e49a52; --warn-soft:#2c2114; --violet:#9b8cf0; --rose:#f0718f; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);margin:0;line-height:1.5}
+h1,h2{font-weight:600;margin:0;text-wrap:balance}
+.wrap{max-width:1180px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:22px 44px}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px}
+header.top h1{font-size:1.45rem;letter-spacing:-.012em}
+header.top .sub{color:var(--ink-3);font-size:.8rem;font-family:var(--mono)}
+.lede{color:var(--ink-2);font-size:.92rem;max-width:64ch;margin:9px 0 20px}
+.console{display:grid;grid-template-columns:228px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.console{grid-template-columns:1fr;gap:14px}}
+nav.rail{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;position:sticky;top:12px}
+@media (max-width:880px){nav.rail{position:static;display:flex;gap:6px;overflow-x:auto}}
+.rail-label{font-family:var(--mono);font-size:.62rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);padding:6px 8px 9px}
+@media (max-width:880px){.rail-label{display:none}}
+.rail button{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;
+  font-family:var(--sans);font-size:.845rem;color:var(--ink-2);padding:7px 9px;border-radius:7px;line-height:1.3}
+@media (max-width:880px){.rail button{white-space:nowrap;width:auto;flex:0 0 auto;font-size:.8rem}}
+.rail button:hover{background:var(--panel-2);color:var(--ink)}
+.rail button[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.rail button .n{font-family:var(--mono);font-size:.69rem;color:var(--ink-3);margin-right:7px}
+.rail button[aria-current="true"] .n{color:var(--accent)}
+.rail button:focus-visible,input:focus-visible,select:focus-visible,.seg button:focus-visible,
+.chipbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.bench h2{font-size:1.1rem;letter-spacing:-.006em}
+.tag{display:inline-block;font-family:var(--mono);font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-soft);padding:3px 7px;border-radius:4px;vertical-align:2px;margin-left:8px}
+.notice{color:var(--ink-2);font-size:.87rem;margin:9px 0 15px;max-width:68ch}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 254px;gap:16px;align-items:start}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.stage{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0}
+canvas{display:block;width:100%;touch-action:none}
+.panelbox{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.ctrl{margin-bottom:13px}
+.ctrl:last-child{margin-bottom:0}
+.ctrl label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  font-size:.78rem;color:var(--ink-2);margin-bottom:5px}
+.ctrl label .v{font-family:var(--mono);font-size:.78rem;color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+select{width:100%;font-family:var(--sans);font-size:.82rem;padding:6px 8px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;font-family:var(--sans);font-size:.78rem;padding:6px 9px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.chipbtn{font-family:var(--sans);font-size:.75rem;padding:4px 8px;border-radius:5px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer}
+.chipbtn:hover{border-color:var(--accent);color:var(--accent)}
+.chiprow{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:13px}
+.rd{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px;min-width:0}
+.rd .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.rd.wide{grid-column:1/-1}
+.rd .n{font-family:var(--mono);font-size:.97rem;font-weight:500;color:var(--ink);
+  font-variant-numeric:tabular-nums;margin-top:2px;line-height:1.25;word-break:break-word}
+.rd .n small{font-size:.66rem;color:var(--ink-3);font-weight:400}
+.rd.hot .n{color:var(--warn)}
+.rd.go .n{color:var(--accent)}
+.why{margin-top:14px;padding:11px 13px;border-left:3px solid var(--accent);background:var(--accent-soft);
+  border-radius:0 7px 7px 0;font-size:.845rem;color:var(--ink-2)}
+.why b{color:var(--ink)}
+.cfgbox{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}
+.cfgline{font-family:var(--mono);font-size:.95rem;line-height:1.75;word-break:break-word;color:var(--ink)}
+.cfgline sup{font-size:.68em}
+.foot{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);color:var(--ink-3);font-size:.78rem;max-width:72ch}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* served standalone and inside a Notion embed box: trim the page chrome */
+html,body{margin:0;padding:0}
+.wrap{padding-block:16px 22px}
+header.top h1{font-size:1.28rem}
+.lede{font-size:.88rem;margin:7px 0 15px}
+.foot{margin-top:18px;font-size:.74rem}
+/* a Notion embed box is narrower than a browser window: keep the controls beside
+   the canvas down to 600px instead of stacking them at 760 and doubling the height */
+@media (min-width:600px){
+  .grid2{grid-template-columns:minmax(0,1fr) 232px;gap:13px}
+  .bench{padding:14px}
+}
+@media (max-width:599px){.bench{padding:13px}}
+</style></head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Ideal & Real Gases</h1>
+    <span class="sub">Structure 1.5</span>
+  </header>
+  <p class="lede">The kinetic model assumes molecules have no volume and no attractions. Both assumptions fail, and PV/nRT shows you exactly how and when.</p>
+  <main class="bench" id="bench"></main>
+  <p class="foot">van der Waals constants a and b are real literature values. R = 8.31 J K⁻¹ mol⁻¹. The compressibility curve is swept over volume at the temperature and amount you set.</p>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.innerHTML=x;return n};
+const cvar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt=(x,d)=>isFinite(x)?x.toFixed(d==null?2:d):"—";
+function sup(n){const m={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+  return String(n).split("").map(c=>m[c]||c).join("")}
+function sci(x,d){if(!isFinite(x)||x===0)return"0";
+  const e=Math.floor(Math.log10(Math.abs(x))),m=x/Math.pow(10,e);
+  return m.toFixed(d==null?2:d)+"×10<small>"+sup(e)+"</small>"}
+
+/* ---------- canvas plumbing ---------- */
+const painters=[];
+function stage(parent,ratio){
+  const box=el("div","stage"),c=document.createElement("canvas");
+  c.style.aspectRatio=ratio||"16/10";box.appendChild(c);parent.appendChild(box);return c}
+function ctx2d(c){
+  const dpr=window.devicePixelRatio||1,r=c.getBoundingClientRect();
+  const w=Math.max(1,r.width||320),h=Math.max(1,r.height||200);
+  c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);
+  const g=c.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+  return{g,w,h}}
+function register(fn){painters.push(fn);fn()}
+function repaintAll(){painters.forEach(f=>{try{f()}catch(e){}})}
+let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(repaintAll,90)});
+if(window.matchMedia){const mq=matchMedia("(prefers-color-scheme:dark)");
+  if(mq.addEventListener)mq.addEventListener("change",repaintAll)}
+new MutationObserver(repaintAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ---------- control builders ---------- */
+function slider(parent,o){
+  const d=el("div","ctrl"),l=el("label"),cap=el("span",null,o.label),v=el("span","v");
+  l.append(cap,v);
+  const i=document.createElement("input");
+  i.type="range";i.min=o.min;i.max=o.max;i.step=o.step;i.value=o.value;
+  i.id="r"+Math.random().toString(36).slice(2,9);
+  d.append(l,i);parent.appendChild(d);
+  const show=()=>{v.innerHTML=o.fmt?o.fmt(+i.value):i.value};
+  i.addEventListener("input",()=>{show();o.on(+i.value)});show();
+  return{box:d,input:i,label:cap,set(x){i.value=x;show()},get(){return +i.value},
+    relabel(t){cap.textContent=t}};
+}
+function picker(parent,o){
+  const d=el("div","ctrl");
+  if(o.label){const l=el("label");l.appendChild(el("span",null,o.label));d.appendChild(l)}
+  const s=document.createElement("select");s.id="s"+Math.random().toString(36).slice(2,9);
+  o.options.forEach(op=>{const n=document.createElement("option");n.value=op.v;n.textContent=op.t;s.appendChild(n)});
+  s.value=o.value;d.appendChild(s);parent.appendChild(d);
+  s.addEventListener("change",()=>o.on(s.value));
+  return{sel:s,set(x){s.value=x},get(){return s.value}};
+}
+function segmented(parent,o){
+  const d=el("div","ctrl");
+  if(o.label){const l=el("label");l.appendChild(el("span",null,o.label));d.appendChild(l)}
+  const g=el("div","seg");let cur=o.value;
+  const btns=o.options.map(op=>{
+    const b=document.createElement("button");b.type="button";b.textContent=op.t;
+    b.setAttribute("aria-pressed",String(op.v===cur));
+    b.addEventListener("click",()=>{cur=op.v;sync();o.on(cur)});
+    g.appendChild(b);return b});
+  function sync(){btns.forEach((b,i)=>b.setAttribute("aria-pressed",String(o.options[i].v===cur)))}
+  d.appendChild(g);parent.appendChild(d);
+  return{get(){return cur},set(x){cur=x;sync()}};
+}
+function readouts(parent,keys){
+  const d=el("div","readout"),map={};
+  keys.forEach(k=>{const b=el("div","rd"+(k.tone?" "+k.tone:"")+(k.wide?" wide":""));
+    b.appendChild(el("div","k",k.k));const n=el("div","n","—");b.appendChild(n);
+    d.appendChild(b);map[k.id]={n,box:b,base:"rd "+(k.tone||"")+(k.wide?" wide":"")}});
+  parent.appendChild(d);return map}
+function chips(parent,list){
+  const row=el("div","chiprow");
+  list.forEach(([t,fn])=>{const b=el("button","chipbtn",t);b.type="button";b.onclick=fn;row.appendChild(b)});
+  parent.appendChild(row);return row}
+function why(parent,html){const d=el("div","why",html);parent.appendChild(d);return d}
+
+function wl2rgb(wl){
+  let r=0,g=0,b=0;
+  if(wl>=380&&wl<440){r=-(wl-440)/60;b=1}
+  else if(wl<490){g=(wl-440)/50;b=1}
+  else if(wl<510){g=1;b=-(wl-510)/20}
+  else if(wl<580){r=(wl-510)/70;g=1}
+  else if(wl<645){r=1;g=-(wl-645)/65}
+  else if(wl<=780){r=1}
+  let f=1;
+  if(wl>=380&&wl<420)f=.3+.7*(wl-380)/40;
+  else if(wl>700&&wl<=780)f=.3+.7*(780-wl)/80;
+  const q=x=>Math.round(255*Math.pow(Math.max(0,Math.min(1,x))*f,.8));
+  return[q(r),q(g),q(b)]}
+const rgbs=a=>"rgb("+a[0]+","+a[1]+","+a[2]+")";
+/* ======================= 1. IDEAL & REAL GASES ======================= */
+function simGas(root){
+  const g2=el("div","grid2");root.appendChild(g2);
+  const left=el("div");g2.appendChild(left);
+  const pan=el("div","panelbox");g2.appendChild(pan);
+  const c=stage(left,"16/10");
+  const GAS={He:{n:"helium",a:.0035,b:2.37e-5},H2:{n:"hydrogen",a:.0247,b:2.66e-5},
+    N2:{n:"nitrogen",a:.141,b:3.91e-5},CO2:{n:"carbon dioxide",a:.364,b:4.27e-5},
+    NH3:{n:"ammonia",a:.423,b:3.71e-5},H2O:{n:"water vapour",a:.553,b:3.05e-5}};
+  const R=8.314,st={V:24,T:298,n:1,gas:"N2"};
+  const Pideal=(V,T,n)=>n*R*T/(V/1000);
+  function Preal(V,T,n,k){const v=V/1000,nb=n*GAS[k].b;
+    return v<=nb*1.02?NaN:n*R*T/(v-nb)-GAS[k].a*n*n/(v*v)}
+  const calc=()=>{const Pi=Pideal(st.V,st.T,st.n),Pr=Preal(st.V,st.T,st.n,st.gas);
+    return{Pi,Pr,Z:Pr*(st.V/1000)/(st.n*R*st.T)}};
+  const rd=readouts(pan,[{id:"Pi",k:"P ideal / kPa"},{id:"Pr",k:"P real / kPa",tone:"hot"},
+    {id:"Z",k:"compressibility PV/nRT",tone:"go",wide:true}]);
+  const gsel=picker(pan,{label:"Gas",value:st.gas,
+    options:Object.keys(GAS).map(k=>({v:k,t:GAS[k].n})),on:v=>{st.gas=v;upd()}});
+  const sV=slider(pan,{label:"Volume",min:.4,max:60,step:.2,value:st.V,
+    fmt:x=>fmt(x,1)+" dm³",on:v=>{st.V=v;upd()}});
+  const sT=slider(pan,{label:"Temperature",min:80,max:900,step:5,value:st.T,
+    fmt:x=>x+" K",on:v=>{st.T=v;upd()}});
+  const sN=slider(pan,{label:"Amount",min:.2,max:4,step:.1,value:st.n,
+    fmt:x=>fmt(x,1)+" mol",on:v=>{st.n=v;upd()}});
+  const preset=(V,T,n,g)=>()=>{st.V=V;st.T=T;st.n=n;if(g){st.gas=g;gsel.set(g)}
+    sV.set(V);sT.set(T);sN.set(n);upd()};
+  chips(pan,[["Thin and hot",preset(50,700,1)],["Squeezed hard",preset(1,298,1)],
+    ["Cold and dense",preset(1.4,120,1)],["Helium, squeezed",preset(1,298,1,"He")]]);
+  why(root,"<b>Watch PV/nRT.</b> Shrink the volume and it dips <i>below</i> 1 first — attractions pull the molecules together, so the real pressure is lower than ideal. Squeeze further and it climbs <i>above</i> 1, because the molecules' own volume starts to resist. Switch to helium: almost no attractions, so the dip nearly vanishes and only the size term is left.");
+  const parts=[];for(let i=0;i<95;i++)parts.push({x:Math.random(),y:Math.random(),a:Math.random()*6.283});
+  let raf=null,last=0;
+  function upd(){
+    const r=calc();
+    rd.Pi.n.innerHTML=sci(r.Pi/1000,2);
+    rd.Pr.n.innerHTML=isFinite(r.Pr)?sci(r.Pr/1000,2):"solid";
+    rd.Z.n.textContent=isFinite(r.Z)?fmt(r.Z,3)+(Math.abs(r.Z-1)<.02?"  ideal":(r.Z<1?"  attractions win":"  volume wins")):"—";
+    rd.Z.box.className="rd wide "+(isFinite(r.Z)&&Math.abs(r.Z-1)<.02?"go":"hot");
+  }
+  function draw(ts){
+    const{g,w,h}=ctx2d(c),r=calc();
+    const ink2=cvar("--ink-2"),ink3=cvar("--ink-3"),acc=cvar("--accent"),line=cvar("--line");
+    const dt=last?Math.min(.05,(ts-last)/1000):0;last=ts;
+    const cw=Math.max(60,Math.min(132,w*.26)),cx=26,cyT=16,cyB=h-34,span=cyB-cyT;
+    const frac=Math.max(.05,Math.min(1,st.V/60)),top=cyB-span*frac;
+    g.fillStyle=cvar("--accent-soft");g.fillRect(cx+1,top,cw-2,cyB-top-1);
+    g.strokeStyle=line;g.lineWidth=2;
+    g.beginPath();g.moveTo(cx,cyT);g.lineTo(cx,cyB);g.lineTo(cx+cw,cyB);g.lineTo(cx+cw,cyT);g.stroke();
+    g.fillStyle=ink3;g.fillRect(cx-4,top-7,cw+8,7);
+    const speed=Math.sqrt(st.T/298)*44,count=Math.min(parts.length,Math.round(16+st.n*16));
+    g.fillStyle=acc;
+    for(let i=0;i<count;i++){const p=parts[i];
+      p.x+=Math.cos(p.a)*speed*dt/cw;p.y+=Math.sin(p.a)*speed*dt/Math.max(12,cyB-top);
+      if(p.x<.03||p.x>.97){p.a=Math.PI-p.a;p.x=Math.max(.03,Math.min(.97,p.x))}
+      if(p.y<.05||p.y>.95){p.a=-p.a;p.y=Math.max(.05,Math.min(.95,p.y))}
+      g.beginPath();g.arc(cx+p.x*cw,top+p.y*(cyB-top),2.5,0,6.283);g.fill()}
+    g.fillStyle=ink3;g.font="400 10px "+cvar("--mono");g.textAlign="center";
+    g.fillText("piston",cx+cw/2,top-11);
+    g.fillStyle=ink2;g.font="500 11px "+cvar("--sans");
+    g.fillText(fmt(st.V,1)+" dm³ · "+st.T+" K",cx+cw/2,h-12);
+    const px=cx+cw+52,pw=w-px-20,py=24,ph=h-78;
+    if(pw>90){
+      /* log pressure axis: the dip-then-rise only reads across decades */
+      const zTop=3,zBot=.25,PLO=1e4,PHI=1e9;
+      const Y=z=>py+ph*(zTop-z)/(zTop-zBot);
+      const X=P=>px+pw*(Math.log10(Math.max(PLO,Math.min(PHI,P)))-Math.log10(PLO))/(Math.log10(PHI)-Math.log10(PLO));
+      g.strokeStyle=line;g.lineWidth=1;
+      g.beginPath();g.moveTo(px,py);g.lineTo(px,py+ph);g.lineTo(px+pw,py+ph);g.stroke();
+      g.setLineDash([5,4]);g.strokeStyle=ink3;
+      g.beginPath();g.moveTo(px,Y(1));g.lineTo(px+pw,Y(1));g.stroke();g.setLineDash([]);
+      g.fillStyle=ink3;g.font="400 10px "+cvar("--mono");
+      g.textAlign="right";g.fillText("ideal = 1",px+pw-2,Y(1)-5);
+      g.fillText("3",px-6,Y(3)+4);g.fillText("2",px-6,Y(2)+4);g.fillText("0.3",px-6,Y(.3)+4);
+      g.textAlign="center";
+      [[1e5,"1"],[1e6,"10"],[1e7,"100"],[1e8,"10³"]].forEach(t=>{
+        g.strokeStyle=line;g.globalAlpha=.6;g.lineWidth=1;
+        g.beginPath();g.moveTo(X(t[0]),py);g.lineTo(X(t[0]),py+ph);g.stroke();g.globalAlpha=1;
+        g.fillStyle=ink3;g.fillText(t[1],X(t[0]),py+ph+14)});
+      const pts=[];
+      for(let i=0;i<=300;i++){
+        const V=.02*Math.pow(60/.02,i/300);
+        const P=Preal(V,st.T,st.n,st.gas);if(!isFinite(P)||P<=0)continue;
+        pts.push([P,P*(V/1000)/(st.n*R*st.T)])}
+      pts.sort((a,b)=>a[0]-b[0]);
+      g.strokeStyle=acc;g.lineWidth=2;g.beginPath();
+      pts.forEach((q,i)=>{const xx=X(q[0]),yy=Y(Math.max(zBot,Math.min(zTop,q[1])));
+        i?g.lineTo(xx,yy):g.moveTo(xx,yy)});
+      g.stroke();
+      if(isFinite(r.Z)){
+        const xx=X(r.Pr),yy=Y(Math.max(zBot,Math.min(zTop,r.Z)));
+        g.fillStyle=cvar("--warn");g.beginPath();g.arc(xx,yy,5,0,6.283);g.fill();
+        g.strokeStyle=cvar("--panel-2");g.lineWidth=1.6;g.stroke()}
+      g.fillStyle=ink2;g.font="500 11px "+cvar("--sans");g.textAlign="center";
+      g.fillText("pressure / bar  (log scale)",px+pw/2,h-11);
+      g.save();g.translate(px-32,py+ph/2);g.rotate(-Math.PI/2);g.fillText("PV/nRT",0,0);g.restore();
+    }
+    g.textAlign="left";
+    raf=requestAnimationFrame(draw);
+  }
+  upd();
+  register(()=>{if(raf)cancelAnimationFrame(raf);last=0;raf=requestAnimationFrame(draw)});
+  root._stop=()=>{if(raf)cancelAnimationFrame(raf)};
+}
+simGas(document.getElementById("bench"));
+</script>
+</body></html>
