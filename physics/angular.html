@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Angular Momentum — the Spinning Skater</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Angular Momentum — the Spinning Skater</h1><p class="sub">A.4.7 — with no external torque, L = Iω is conserved. Pull in and ω must rise.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Arm radius<b><span id="rV">1.2</span> m</b></span><input type="range" id="r" min="0.2" max="1.2" step="0.05" value="1.2"></label><label class="ctl"><span class="lab">Mass in each hand<b><span id="mV">3</span> kg</b></span><input type="range" id="m" min="0" max="6" step="0.5" value="3"></label><label class="ctl"><span class="lab">Moment of inertia of the body<b><span id="I0V">1.2</span> kg m²</b></span><input type="range" id="I0" min="0.3" max="4" step="0.1" value="1.2"></label><label class="ctl"><span class="lab">ω with arms fully out<b><span id="w0V">2.2</span> rad/s</b></span><input type="range" id="w0" min="0.5" max="5" step="0.1" value="2.2"></label><div class="row"><button class="btn pri" id="pull">Pull in / extend</button></div><div class="row"><button class="btn" id="play">Pause</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">Moment of inertia</div><div class="v" id="ro1">—</div></div><div class="ro"><div class="k">Angular speed</div><div class="v" id="ro2">—</div></div><div class="ro"><div class="k">L (kg m² s⁻¹)</div><div class="v" id="ro3">—</div></div><div class="ro"><div class="k">Rotational KE</div><div class="v" id="ro4">—</div></div><div class="ro"><div class="k">Period</div><div class="v" id="ro5">—</div></div><div class="ro"><div class="k">Speed of the hands</div><div class="v" id="ro6">—</div></div></div>
+<p class="sec">Graphs <span>— swept across every arm radius — the blue line is flat, which is the whole point</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="g1" checked><span class="sw" style="background:var(--orange)"></span><span class="lb" id="g1L">moment of inertia I</span></label><label class="chip"><input type="checkbox" id="g2" checked><span class="sw" style="background:var(--green)"></span><span class="lb" id="g2L">angular speed ω</span></label><label class="chip"><input type="checkbox" id="g3" checked><span class="sw" style="background:var(--blue)"></span><span class="lb" id="g3L">angular momentum L</span></label><label class="chip"><input type="checkbox" id="g4" checked><span class="sw" style="background:var(--red)"></span><span class="lb" id="g4L">kinetic energy ½Iω²</span></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · Moment of inertia</h4><div class="fm"><div>I = I<sub>body</sub> + 2mr²</div><div>= <span class="num" data-k="a_I0"></span> + 2 × <span class="num" data-k="a_m"></span> × (<span class="num" data-k="a_r"></span>)² = <span class="num" data-k="a_I"></span> kg m²</div></div><p class="why">Moment of inertia is rotation's version of mass: how hard it is to change the spin. But unlike mass it is not a fixed property of the object — it depends on where the mass sits relative to the axis, and on r<i>²</i>, so moving the hands halfway in cuts their contribution to a quarter.</p></div><div class="eq"><h4>2 · Angular momentum is conserved</h4><div class="fm"><div>L = Iω, and with no external torque L cannot change</div><div>I₁ω₁ = I₂ω₂</div><div><span class="num" data-k="a_Iref"></span> × <span class="num" data-k="a_w0"></span> = <span class="num" data-k="a_I"></span> × <span class="num" data-k="a_w"></span> = <span class="num" data-k="a_L"></span></div><div>ω has grown by a factor <span class="num" data-k="a_ratio"></span></div></div><p class="why">The skater's own muscles are internal forces — they come in equal and opposite pairs and cannot change the total. Only an outside torque could, and the ice provides almost none. So whatever I does, ω must do the exact opposite to keep the product fixed.</p></div><div class="eq"><h4>3 · But energy is not</h4><div class="fm"><div>KE = ½Iω² = L²/2I</div><div>arms out: <span class="num" data-k="a_KE0"></span> J → now <span class="num" data-k="a_KE"></span> J</div><div>check via L²/2I = <span class="num" data-k="a_KEalt"></span> J</div><div>work done by the skater = <span class="num" data-k="a_dKE"></span> J</div></div><p class="why">Writing it as L²/2I is the key step: with L pinned, kinetic energy is inversely proportional to I, so halving I <i>doubles</i> the energy. That energy is not free — it is work the arms do pulling the masses inwards against the force needed to hold them in a circle. Let go and the arms fly out, handing the energy straight back.</p></div><div class="eq"><h4>4 · Right now</h4><div class="fm"><div>ω = <span class="num" data-k="a_w"></span> rad s⁻¹ → period = <span class="num" data-k="a_T"></span> s</div><div>speed of the hands v = ωr = <span class="num" data-k="a_v"></span> m s⁻¹</div></div><p class="why">Note that while ω rises as the arms come in, v = ωr can still fall, because r is shrinking too. The hands turn faster but travel a much smaller circle. Angular and linear speed are genuinely different quantities, and this is the cleanest place to see them come apart.</p></div></div>
+<p class="note"><b>Try this:</b> hit <i>pull in / extend</i> and watch the four bars. The blue one — angular momentum — never moves, because nothing exerts an external torque on the skater. I falls as r², so ω rises by exactly the factor I falls by. The graph says the same thing across every radius at once: a flat blue line, with the orange and red curves crossing it in opposite directions. Kinetic energy is <i>not</i> conserved — ½Iω² = L²/2I, so halving I doubles the energy, and that extra energy is real work done by the arms. Set the hand masses to zero and nothing changes with r: with no mass out at radius r there is nothing for the r² to act on.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const RMAX=1.2, RMIN=0.2;
+let P={I0:1.2,m:3,r:1.2,w0:2.2}, phi=0, rT=null;
+function Iat(rr){return P.I0+2*P.m*rr*rr}
+function Iref(){return Iat(RMAX)}
+function Lc(){return Iref()*P.w0}
+function I(){return Iat(P.r)}
+function w(){return Lc()/I()}
+function step(dt){
+  if(rT!==null){const d=rT-P.r, s=Math.sign(d)*Math.min(Math.abs(d),dt*0.85);
+    P.r+=s;const el=$('r');if(el){el.value=P.r.toFixed(2);$('rV').textContent=P.r.toFixed(2)}
+    if(Math.abs(rT-P.r)<0.005){P.r=rT;rT=null}}
+  phi+=w()*dt*0.55;if(phi>7)phi-=2*Math.PI}
+function draw(){cx.clearRect(0,0,W,H);
+  const sc=Math.min(W*0.19,H*0.33)/RMAX;
+  const ox=W*0.27, oy=H*0.52, R=P.r*sc, ww=w(), KE=0.5*I()*ww*ww;
+  for(let i=1;i<=4;i++)arc2(ox,oy,R,phi-i*0.22,phi-i*0.22+0.14,COL.fill,3);
+  ring(ox,oy,R,COL.grid,1,[4,4]);
+  const bR=Math.max(14,Math.min(30,10+P.I0*9));
+  for(const s of [0,Math.PI]){const ux=Math.cos(phi+s),uy=Math.sin(phi+s);
+    const ax=ox+ux*R, ay=oy+uy*R, hr=6+Math.sqrt(Math.max(P.m,0.01))*3.4;
+    line(ox,oy,ax,ay,COL.ink,3);
+    dot(ax,ay,hr,COL.accent);
+    txt(ax+ux*(hr+16),ay+uy*(hr+16)+4,f(P.m,1)+' kg',COL.accent,11,'center')}
+  dot(ox,oy,bR,COL.mute);
+  ring(ox,oy,bR,COL.ink,2);
+  const al=R+26;
+  arc2(ox,oy,al,phi+0.5,phi+1.5,COL.green,2.4);
+  const ea=phi+1.5, ex=ox+Math.cos(ea)*al, ey=oy+Math.sin(ea)*al;
+  arrow(ex-Math.sin(ea)*1,ey+Math.cos(ea)*1,ex-Math.sin(ea)*13,ey+Math.cos(ea)*13,COL.green,2.4);
+  txt(ox,oy+al+24,'ω = '+f(ww,2)+' rad s⁻¹',COL.green,12,'center',true);
+  txt(ox,oy-al-16,'r = '+f(P.r,2)+' m',COL.mute,11.5,'center');
+  const bx=W*0.56, bw=Math.min(W-bx-30,300), bh=H-162, by=70;
+  const items=[['I',I()/Iref(),I(),'kg m²',COL.orange],
+               ['ω',ww/P.w0,ww,'rad s⁻¹',COL.green],
+               ['L = Iω',1,Lc(),'kg m² s⁻¹',COL.blue],
+               ['½Iω²',KE/(0.5*Iref()*P.w0*P.w0),KE,'J',COL.red]];
+  const cw2=bw/4;
+  const maxR=Math.max(2.2,Math.min(8,Math.max.apply(null,items.map(q=>q[1]))*1.15));
+  line(bx,by+bh,bx+bw,by+bh,COL.line,1.5);
+  const y1=by+bh-(1/maxR)*bh;
+  line(bx,y1,bx+bw,y1,COL.grid,1.5,[5,4]);
+  txt(bx+bw+4,y1+4,'×1',COL.mute,10);
+  txt(bx,by-22,'compared with the arms-out value',COL.mute,11,'left',true);
+  items.forEach((it,i)=>{const nm=it[0],rel=it[1],val=it[2],un=it[3],col=it[4];
+    const x=bx+i*cw2+cw2*0.22, wd=cw2*0.56;
+    const hgt=Math.max(1,Math.min(rel/maxR,1)*bh);
+    rect(x,by+bh-hgt,wd,hgt,col,'',0);
+    txt(x+wd/2,by+bh-hgt-20,'×'+f(rel,2),col,12,'center',true);
+    txt(x+wd/2,by+bh-hgt-6,f(val,2),COL.mute,10.5,'center');
+    txt(x+wd/2,by+bh+16,nm,COL.ink,12,'center',true);
+    txt(x+wd/2,by+bh+30,un,COL.mute,9.5,'center')});
+  const KE0=0.5*Iref()*P.w0*P.w0, dKE=KE-KE0;
+  txt(bx,H-14,'work done by the skater pulling in = '+f(dKE,2)+' J',
+      Math.abs(dKE)<0.01?COL.mute:COL.ink,12,'left',Math.abs(dKE)>=0.01);
+  S('ro1',f(I(),2)+' kg m²'); S('ro2',f(ww,2)+' rad/s'); S('ro3',f(Lc(),2));
+  S('ro4',f(KE,2)+' J'); S('ro5',f(2*Math.PI/ww,2)+' s'); S('ro6',f(ww*P.r,2)+' m/s');
+  // ---- live equations
+  S('a_I0',f(P.I0,2)); S('a_m',f(P.m,1)); S('a_r',f(P.r,2));
+  S('a_arms',f(2*P.m*P.r*P.r,3)); S('a_I',f(I(),3));
+  S('a_Iref',f(Iref(),3)); S('a_w0',f(P.w0,2)); S('a_w',f(ww,2));
+  S('a_L',f(Lc(),3)); S('a_ratio',f(Iref()/I(),2));
+  S('a_KE0',f(KE0,2)); S('a_KE',f(KE,2)); S('a_dKE',f(dKE,2));
+  S('a_KEalt',f(Lc()*Lc()/(2*I()),2));
+  S('a_v',f(ww*P.r,2)); S('a_T',f(2*Math.PI/ww,2));
+  // ---- graph: sweep the arm radius
+  const pts=[[],[],[],[]];
+  for(let u=RMIN;u<=RMAX+1e-9;u+=0.01){const Iu=Iat(u), wu=Lc()/Iu;
+    pts[0].push([u,Iu]); pts[1].push([u,wu]); pts[2].push([u,Lc()]);
+    pts[3].push([u,0.5*Iu*wu*wu])}
+  const want=[['g1',0,COL.orange,'kg m²'],['g2',1,COL.green,'rad/s'],
+              ['g3',2,COL.blue,'kg m²/s'],['g4',3,COL.red,'J']];
+  const ser=[];
+  for(const q of want) if(isOn(q[0])) ser.push({col:q[2],unit:q[3],pts:pts[q[1]]});
+  plotXY(ser,RMAX,'arm radius r / m',P.r);
+}
+for(const k of ['I0','m','r','w0'])
+  bind(k,e=>{P[k]=+e.value;$(k+'V').textContent=(+e.value).toFixed(k==='r'?2:1);
+    if(k==='r')rT=null});
+$('play').onclick=()=>setPlay(!playing);
+$('pull').onclick=()=>{rT=(P.r>(RMAX+RMIN)/2)?RMIN:RMAX;setPlay(true)};
+setPlay(true);
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>

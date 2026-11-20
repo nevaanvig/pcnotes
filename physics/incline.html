@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inclined Plane with Friction</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Inclined Plane with Friction</h1><p class="sub">A.2.5 — resolve parallel and perpendicular to the slope, then let friction decide.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Slope angle<b><span id="thV">25</span> °</b></span><input type="range" id="th" min="0" max="60" step="1" value="25"></label><label class="ctl"><span class="lab">Mass<b><span id="mV">5</span> kg</b></span><input type="range" id="m" min="1" max="20" step="0.5" value="5"></label><label class="ctl"><span class="lab">Static μs<b><span id="usV">0.6</span></b></span><input type="range" id="us" min="0" max="1.2" step="0.05" value="0.6"></label><label class="ctl"><span class="lab">Kinetic μd<b><span id="udV">0.4</span></b></span><input type="range" id="ud" min="0" max="1.2" step="0.05" value="0.4"></label><label class="ctl"><span class="lab">Push up the slope<b><span id="FV">0</span> N</b></span><input type="range" id="F" min="0" max="150" step="1" value="0"></label><div class="row"><button class="btn pri" id="play">Play</button><button class="btn" id="reset">Reset</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">Normal force N</div><div class="v" id="roN">—</div></div><div class="ro"><div class="k">mg sin θ</div><div class="v" id="roP">—</div></div><div class="ro"><div class="k">Friction now</div><div class="v" id="roF">—</div></div><div class="ro"><div class="k">Max static μsN</div><div class="v" id="roMax">—</div></div><div class="ro"><div class="k">Acceleration</div><div class="v" id="roA">—</div></div><div class="ro"><div class="k">Speed</div><div class="v" id="roV">—</div></div></div>
+<p class="sec">Graphs <span>— down the slope counts as positive — press Play to record</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="gv" checked><span class="sw" style="background:var(--blue)"></span><span class="lb" id="gvL">velocity v (m s⁻¹)</span></label><label class="chip"><input type="checkbox" id="gx"><span class="sw" style="background:var(--purple)"></span><span class="lb" id="gxL">displacement x (m)</span></label><label class="chip"><input type="checkbox" id="ga" checked><span class="sw" style="background:var(--red)"></span><span class="lb" id="gaL">acceleration a (m s⁻²)</span></label><label class="chip"><input type="checkbox" id="gf"><span class="sw" style="background:var(--orange)"></span><span class="lb" id="gfL">friction f (N)</span></label><label class="chip"><input type="checkbox" id="gn"><span class="sw" style="background:var(--green)"></span><span class="lb" id="gnL">net force (N)</span></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · Resolving the weight</h4><div class="fm"><div>W = mg = <span class="num" data-k="e_m">5.0</span> × 9.81 = <span class="num" data-k="e_W">49.1</span> N</div><div>N = mg cos θ = <span class="num" data-k="e_W"></span> × cos <span class="num" data-k="e_th">25</span>° = <span class="num" data-k="e_N"></span> N</div><div>mg sin θ = W × sin <span class="num" data-k="e_th">25</span>° = <span class="num" data-k="e_ds"></span> N</div></div><p class="why">A surface can only push at right angles to itself, so the weight has to be split into a part pressing into the slope — exactly balanced by N, since there is no acceleration in that direction — and a part running along the slope, which is the only piece trying to move the block. Notice N is <i>not</i> mg once the slope is tilted.</p></div><div class="eq"><h4>2 · Does it move at all?</h4><div class="fm"><div>f<sub>max</sub> = μ<sub>s</sub>N = <span class="num" data-k="e_us">0.60</span> × <span class="num" data-k="e_N"></span> = <span class="num" data-k="e_fmax"></span> N</div><div>driving force = mg sin θ − F = <span class="num" data-k="e_ds"></span> − <span class="num" data-k="e_F">0</span> = <span class="num" data-k="e_drive"></span> N</div><div><span id="e_verdict">—</span></div><div>limiting angle = tan⁻¹ μ<sub>s</sub> = <span class="num" data-k="e_lim"></span>°</div></div><p class="why">Static friction is not a fixed number — it grows to match whatever is pulling, up to a ceiling of μ<sub>s</sub>N. Set mg sin θ = μ<sub>s</sub>N and the mass cancels on both sides, leaving tan θ = μ<sub>s</sub>. That is why a heavier block does not grip the slope any better.</p></div><div class="eq"><h4>3 · Once it is sliding</h4><div class="fm"><div>f<sub>k</sub> = μ<sub>d</sub>N = <span class="num" data-k="e_ud">0.40</span> × <span class="num" data-k="e_N"></span> = <span class="num" data-k="e_fk"></span> N</div><div>ma = mg sin θ − F − f<sub>k</sub> = <span class="num" data-k="e_netf"></span> N</div><div>a = <span class="num" data-k="e_netf"></span> ÷ <span class="num" data-k="e_m"></span> = <span class="num" data-k="e_a"></span> m s⁻²</div></div><p class="why">Kinetic friction is locked at μ<sub>d</sub>N and always points against the motion, so it no longer adjusts itself. Because μ<sub>d</sub> &lt; μ<sub>s</sub> for almost every pair of surfaces, the friction force <i>drops</i> the instant the block breaks away — which is why things tend to lurch into motion rather than easing into it.</p></div><div class="eq"><h4>4 · Right now</h4><div class="fm"><div>t = <span class="num" data-k="e_t">0</span> s &nbsp; x = <span class="num" data-k="e_x">0</span> m &nbsp; v = <span class="num" data-k="e_v">0</span> m s⁻¹</div><div>check with v² = u² + 2ax &nbsp;→&nbsp; v = <span class="num" data-k="e_suvat">0</span> m s⁻¹</div><div>KE = ½mv² = <span class="num" data-k="e_ke">0</span> J</div><div>work against friction = f x = <span class="num" data-k="e_wf">0</span> J</div></div><p class="why">While the block is sliding, a is constant, so the SUVAT equations apply and the two values of v above must agree. The energy line is the other way of seeing the same motion: gravity does mgx sin θ of work on the block, friction takes f x of it away as heat, and whatever is left over appears as kinetic energy.</p></div></div>
+<p class="note"><b>Try this:</b> leave the push at zero and raise the angle one degree at a time. The block stays put while mg sin θ is below μ<sub>s</sub>N, then breaks away the moment you pass tan⁻¹μ<sub>s</sub> — and changing the mass does not move that threshold at all, because m cancels. Watch the orange arrow: below the limit it grows to match the pull exactly, then drops to the fixed value μ<sub>d</sub>N once sliding starts. Now add a push: find the force that just holds it still, then one that drives it back up — friction flips direction to oppose the new motion, and the acceleration graph jumps.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const G=9.81, LS=4.6, X0=0.55, SLOW=0.45;
+let P={th:25,m:5,us:0.60,ud:0.40,F:0}, x=0, v=0, tm=0, hist=[];
+
+function phys(vv){
+  const a=P.th*Math.PI/180;
+  const N=P.m*G*Math.cos(a), down=P.m*G*Math.sin(a);
+  const drive=down-P.F, maxS=P.us*N, kin=P.ud*N;
+  let st,fr,acc;
+  if(Math.abs(vv)<1e-4 && Math.abs(drive)<=maxS){st='static'; fr=-drive; acc=0}
+  else{st='sliding';
+    const dir=(Math.abs(vv)>1e-4)?Math.sign(vv):Math.sign(drive);
+    fr=-dir*kin; acc=(drive+fr)/P.m}
+  return{a,N,down,drive,maxS,kin,st,fr,acc,net:drive+fr}}
+
+function reset(){x=0;v=0;tm=0;hist=[];setPlay(false)}
+function rec(dt,p){tm+=dt;hist.push([tm,x,v,p.acc,p.fr,p.net]);
+  if(hist.length>1800)hist.shift()}
+
+function step(dt){
+  dt*=SLOW; if(dt<=0)return;
+  let p=phys(v);
+  if(p.st==='static'){v=0;rec(dt,p);return}
+  let v2=v+p.acc*dt;
+  if(v*v2<0){                       // velocity crossed zero inside this step
+    v=0; const q=phys(0);
+    if(q.st==='static'){rec(dt,q);return}   // it stops for good
+    v2=q.acc*dt; p=q}
+  v=v2; x+=v*dt;
+  let endstop=false;
+  if(x>LS-X0-0.05){x=LS-X0-0.05;v=0;endstop=true}
+  if(x<-X0+0.05){x=-X0+0.05;v=0;endstop=true}
+  rec(dt,phys(v));
+  if(endstop)setPlay(false)}
+
+function draw(){cx.clearRect(0,0,W,H);
+  const p=phys(v), a=p.a;
+  const base=H-46, maxH=H-150, maxW=Math.min(W*0.60,430);
+  let bw=maxW, bh=bw*Math.tan(a);
+  if(bh>maxH){bh=maxH;bw=bh/Math.max(Math.tan(a),1e-6)}
+  const xA=46, xB=xA+bw, yTop=base-bh;
+  fillPoly([[xA,base],[xB,base],[xB,yTop]],COL.fill);
+  poly([[xA,base],[xB,base],[xB,yTop],[xA,base]],COL.ink,2.5);
+  arc2(xA,base,40,-a,0,COL.ink,1.5);
+  txt(xA+48,base-9,P.th+'°',COL.ink,13,'left',true);
+  const dsx=-Math.cos(a), dsy=Math.sin(a);     // unit vector down the slope
+  const nx=Math.sin(a),  ny=-Math.cos(a);      // unit normal, out of the slope
+  const len=Math.hypot(bw,bh);                 // the slope is LS metres long
+  const t=(X0+x)/LS;
+  const px=xB+dsx*t*len, py=yTop+dsy*t*len;
+  const bs=Math.max(22,Math.min(40,15+P.m*1.9));
+  cx.save();cx.translate(px,py);cx.rotate(-a);
+  rect(-bs/2,-bs*0.72,bs,bs*0.72,COL.fill2,COL.ink,0,3);
+  cx.restore();
+  const ox=px+nx*bs*0.36, oy=py+ny*bs*0.36;
+  const sc=58/Math.max(P.m*G,1);
+  arrow(ox,oy,ox,oy+P.m*G*sc,COL.red,3);
+  txt(ox+8,oy+P.m*G*sc+4,'mg = '+f(P.m*G,0)+' N',COL.red,11.5);
+  arrow(ox,oy,ox+nx*p.N*sc,oy+ny*p.N*sc,COL.red,3);
+  txt(ox+nx*p.N*sc+6,oy+ny*p.N*sc-4,'N = '+f(p.N,0)+' N',COL.red,11.5);
+  arrow(ox,oy,ox+dsx*p.down*sc,oy+dsy*p.down*sc,COL.green,2.2,7);
+  txt(ox+dsx*p.down*sc-4,oy+dsy*p.down*sc-13,'mg sinθ = '+f(p.down,0)+' N',COL.green,11,'right');
+  if(Math.abs(p.fr)>0.4){const fxv=dsx*p.fr*sc, fyv=dsy*p.fr*sc;
+    arrow(ox,oy,ox+fxv,oy+fyv,COL.orange,3);
+    txt(ox+fxv-nx*20,oy+fyv-ny*20+4,'f = '+f(Math.abs(p.fr),0)+' N',COL.orange,11.5,fxv>0?'left':'right')}
+  if(P.F>0.5){arrow(ox,oy,ox-dsx*P.F*sc,oy-dsy*P.F*sc,COL.purple,3);
+    txt(ox-dsx*P.F*sc+7,oy-dsy*P.F*sc+16,'F = '+P.F+' N',COL.purple,11.5)}
+  // ruler along the slope
+  const rx=xB+dsx*len, ry2=yTop+dsy*len;
+  line(xB-nx*24,yTop-ny*24,rx-nx*24,ry2-ny*24,COL.grid,1.5);
+  for(let d=0;d<=LS+1e-6;d+=1){const u=d/LS;
+    const gx=xB+dsx*u*len-nx*24, gy=yTop+dsy*u*len-ny*24;
+    line(gx,gy,gx-nx*5,gy-ny*5,COL.grid,1.5);
+    if(d>0.5)txt(gx-nx*13,gy-ny*13+4,d+' m',COL.mute,9.5,'center')}
+  // status
+  const lim=Math.atan(P.us)*180/Math.PI, ok=p.st==='static';
+  rect(16,14,Math.min(330,W-32),27,COL.panel,ok?COL.good:COL.bad,0,8);
+  txt(28,32,ok?'AT REST — static friction is holding it'
+             :(v>0?'SLIDING DOWN THE SLOPE':'BEING PUSHED UP THE SLOPE'),
+      ok?COL.good:COL.bad,13,'left',true);
+  txt(16,60,'limiting angle tan⁻¹μs = '+f(lim,1)+'°    •    slope '+LS+' m    •    '
+     +'slow motion ×'+SLOW,COL.mute,11.5);
+  // readouts
+  S('roN',f(p.N,1)+' N'); S('roP',f(p.down,1)+' N');
+  S('roF',f(Math.abs(p.fr),1)+' N'); S('roMax',f(p.maxS,1)+' N');
+  S('roA',f(p.acc,2)+' m/s²'); S('roV',f(Math.abs(v),2)+' m/s');
+  // live equations
+  const th=P.th;
+  S('e_m',f(P.m,1)); S('e_W',f(P.m*G,1)); S('e_th',String(th));
+  S('e_cos',f(Math.cos(a),3)); S('e_sin',f(Math.sin(a),3));
+  S('e_N',f(p.N,1)); S('e_ds',f(p.down,1));
+  S('e_us',f(P.us,2)); S('e_ud',f(P.ud,2));
+  S('e_fmax',f(p.maxS,1)); S('e_F',f(P.F,0)); S('e_drive',f(p.drive,1));
+  S('e_lim',f(lim,1));
+  const vd=$('e_verdict');
+  if(vd){const sl=Math.abs(p.drive)>p.maxS;
+    vd.innerHTML = sl
+      ? '<b class="bd">'+f(Math.abs(p.drive),1)+' N &gt; '+f(p.maxS,1)+' N</b> → it slides'
+      : '<b class="gd">'+f(Math.abs(p.drive),1)+' N ≤ '+f(p.maxS,1)+' N</b> → it stays put, and '
+        +'friction only supplies the '+f(Math.abs(p.drive),1)+' N needed'}
+  S('e_fk',f(p.kin,1)); S('e_netf',f(p.drive-Math.sign(p.drive||1)*p.kin,1));
+  S('e_a',f(p.st==='sliding'?p.acc:(Math.abs(p.drive)-p.kin)/P.m,2));
+  S('e_t',f(tm,2)); S('e_x',f(x,2)); S('e_v',f(v,2));
+  S('e_suvat',f(Math.sqrt(Math.max(0,2*Math.abs(p.acc)*Math.abs(x))),2));
+  S('e_ke',f(0.5*P.m*v*v,1)); S('e_wf',f(Math.abs(p.fr*x),1));
+  // graph
+  const want=[['gv',2,COL.blue,'m/s'],['gx',1,COL.purple,'m'],['ga',3,COL.red,'m/s²'],
+              ['gf',4,COL.orange,'N'],['gn',5,COL.green,'N']];
+  const ser=[];
+  for(const q of want) if(isOn(q[0]))
+    ser.push({col:q[2],unit:q[3],pts:hist.map(h=>[h[0],h[q[1]]])});
+  plotXY(ser,Math.max(tm,1.5),'time / s');
+}
+['th','m','us','ud'].forEach(id=>bind(id,e=>{P[id]=+e.value;
+  $(id+'V').textContent=(id==='us'||id==='ud')?(+e.value).toFixed(2):e.value}));
+bind('F',e=>{P.F=+e.value;$('FV').textContent=e.value});
+$('play').onclick=()=>setPlay(!playing);
+$('reset').onclick=reset;
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>

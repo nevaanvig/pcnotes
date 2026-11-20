@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Buoyancy and Terminal Speed</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Buoyancy and Terminal Speed</h1><p class="sub">A.2.3 — upthrust equals the weight of fluid displaced, and drag grows until the forces balance.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Object density<b><span id="rhoV">600</span> kg/m³</b></span><input type="range" id="rho" min="100" max="9000" step="50" value="600"></label><label class="ctl"><span class="lab">Sphere radius<b><span id="rV">0.05</span> m</b></span><input type="range" id="r" min="0.01" max="0.12" step="0.005" value="0.05"></label><label class="ctl"><span class="lab">Fluid density<b><span id="rfV">1000</span> kg/m³</b></span><input type="range" id="rf" min="200" max="2000" step="50" value="1000"></label><label class="ctl"><span class="lab">Fluid viscosity η<b><span id="etaV">0.001</span> Pa s</b></span><input type="range" id="eta" min="0.0005" max="1.5" step="0.0005" value="0.001"></label><label class="chk"><input type="checkbox" id="fd" checked> Include form drag ½C<sub>d</sub>ρAv²</label><div class="row"><button class="btn pri" id="play">Play</button><button class="btn" id="reset">Rest position</button></div><div class="row"><button class="btn" id="drop">Drop in from above</button></div><div class="row"><button class="btn" id="rel">Release at the bottom</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">Weight</div><div class="v" id="roW">—</div></div><div class="ro"><div class="k">Upthrust fully under</div><div class="v" id="roB">—</div></div><div class="ro"><div class="k">Submerged at rest</div><div class="v" id="roS">—</div></div><div class="ro"><div class="k">Terminal speed</div><div class="v" id="roV">—</div></div><div class="ro"><div class="k">Density ratio ρ/ρf</div><div class="v" id="roD">—</div></div><div class="ro"><div class="k">Speed now</div><div class="v" id="roC">—</div></div></div>
+<p class="sec">Graphs <span>— upwards counts as positive — use Drop in or Release to start a run</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="gd" checked><span class="sw" style="background:var(--purple)"></span><span class="lb" id="gdL">depth below surface (m)</span></label><label class="chip"><input type="checkbox" id="gv" checked><span class="sw" style="background:var(--blue)"></span><span class="lb" id="gvL">velocity v (m s⁻¹)</span></label><label class="chip"><input type="checkbox" id="ga"><span class="sw" style="background:var(--red)"></span><span class="lb" id="gaL">acceleration a (m s⁻²)</span></label><label class="chip"><input type="checkbox" id="gb"><span class="sw" style="background:var(--blue)"></span><span class="lb" id="gbL">upthrust Fb (N)</span></label><label class="chip"><input type="checkbox" id="gr"><span class="sw" style="background:var(--green)"></span><span class="lb" id="grL">drag (N)</span></label><label class="chip"><input type="checkbox" id="gn"><span class="sw" style="background:var(--orange)"></span><span class="lb" id="gnL">net force (N)</span></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · The sphere itself</h4><div class="fm"><div>V = (4/3)πr³ = (4/3)π(<span class="num" data-k="q_r">0.050</span>)³ = <span class="num" data-k="q_V"></span> m³</div><div>m = ρV = <span class="num" data-k="q_rho">600</span> × <span class="num" data-k="q_V"></span> = <span class="num" data-k="q_m"></span> kg</div><div>W = mg = <span class="num" data-k="q_W"></span> N</div></div><p class="why">Everything starts from the volume, because both the weight and the upthrust are proportional to it. That is the hidden reason size never decides whether something floats: scale the sphere up and V multiplies both sides of the comparison equally.</p></div><div class="eq"><h4>2 · Archimedes' principle</h4><div class="fm"><div>F<sub>b</sub> = ρ<sub>f</sub> V<sub>sub</sub> g</div><div>V<sub>sub</sub> = <span class="num" data-k="q_ph"></span>% of V = <span class="num" data-k="q_Vsub"></span> m³</div><div>F<sub>b</sub> = <span class="num" data-k="q_rf">1000</span> × <span class="num" data-k="q_Vsub"></span> × 9.81 = <span class="num" data-k="q_Fb"></span> N</div><div>ρ/ρ<sub>f</sub> = <span class="num" data-k="q_sub"></span> &nbsp; <span id='q_verdict'>—</span></div></div><p class="why">The upthrust is the weight of the fluid pushed out of the way — nothing more. Floating means that weight of displaced fluid has grown to equal the object's own weight, and since both are ρVg, the fraction left under the surface is exactly ρ/ρ<sub>f</sub>. Ice sits 92% submerged for precisely this reason.</p></div><div class="eq"><h4>3 · Fluid resistance</h4><div class="fm"><div>viscous: 6πηrv = 6π × <span class="num" data-k="q_eta"></span> × <span class="num" data-k="q_r"></span> × <span class="num" data-k="q_v">0</span> = <span class="num" data-k="q_st">0</span> N</div><div>form: ½C<sub>d</sub>ρ<sub>f</sub>Av² = <span class="num" data-k="q_fm">0</span> N</div><div>total drag = <span class="num" data-k="q_fd">0</span> N</div><div>Re = ρ<sub>f</sub>vd/η = <span class="num" data-k="q_re">0</span></div></div><p class="why">Stokes' law (the 6πηrv term) is the one the syllabus names, but it is only honest for very slow, small, sticky flow — Reynolds numbers below about 1. A 5 cm ball dropped in water is nowhere near that, so the ½C<sub>d</sub>ρAv² term takes over and is what actually sets the speed. Switch it off in the controls and watch the predicted terminal speed become absurd.</p></div><div class="eq"><h4>4 · Terminal speed, and right now</h4><div class="fm"><div>at terminal speed: W − F<sub>b</sub> = F<sub>drag</sub></div><div>W − F<sub>b</sub> = <span class="num" data-k="q_diff"></span> N &nbsp;→&nbsp; v<sub>t</sub> = <span class="num" data-k="q_vt"></span> m s⁻¹</div><div>net force now = <span class="num" data-k="q_net"></span> N</div><div>a = net ÷ m = <span class="num" data-k="q_net"></span> ÷ <span class="num" data-k="q_m2"></span> = <span class="num" data-k="q_a"></span> m s⁻²</div></div><p class="why">Terminal speed is not a property of the object — it is just the speed at which the drag has grown enough to cancel whatever is left of the weight after upthrust. The acceleration line shows the approach: it starts at its largest value and decays towards zero, which is why the velocity graph flattens into a horizontal line rather than ever truly arriving.</p></div></div>
+<p class="note"><b>Try this:</b> the float-or-sink verdict depends only on the <b>density ratio</b> and never on size — a steel marble and a steel cannonball both sink. Set the object denser than the fluid and press <i>Drop in from above</i>: it falls, hits the surface, and the velocity graph bends over as drag catches up with the weight. Then set it lighter and <i>Release at the bottom</i> — it rises, breaches, and bobs, each bounce smaller than the last because drag is removing energy every time. Crank the viscosity to honey levels and the bobbing disappears entirely: the motion becomes overdamped, and the sphere simply creeps to its resting depth.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const G=9.81, CD=0.47, SURF=0.30, TOPY=0.62, FLOOR=-0.30, SLOW=0.55;
+let P={rho:600,r:0.05,rf:1000,eta:0.0010}, y=0.30, v=0, tm=0, hist=[];
+const VOL=()=>4/3*Math.PI*Math.pow(P.r,3);
+const AREA=()=>Math.PI*P.r*P.r;
+const MASS=()=>P.rho*VOL();
+function form(){return isOn('fd')}
+function frac(yy){const d=(SURF-yy)/P.r;      // depth of centre below surface, in radii
+  if(d<=-1)return 0; if(d>=1)return 1;
+  return (2+3*d-d*d*d)/4}                     // spherical-cap volume fraction
+function stokes(vv,ph){return 6*Math.PI*P.eta*P.r*ph*vv}
+function formD(vv,ph){return form()?0.5*CD*P.rf*AREA()*ph*Math.abs(vv)*vv:0}
+function upthrust(yy){return P.rf*VOL()*frac(yy)*G}
+function netF(yy,vv){const ph=frac(yy);
+  return upthrust(yy)-MASS()*G-stokes(vv,ph)-formD(vv,ph)}
+function vterm(){const c=Math.abs(MASS()*G-P.rf*VOL()*G);
+  const b=6*Math.PI*P.eta*P.r, a2=form()?0.5*CD*P.rf*AREA():0;
+  if(a2<1e-12)return c/Math.max(b,1e-12);
+  return (-b+Math.sqrt(b*b+4*a2*c))/(2*a2)}
+function reynolds(){return P.rf*Math.abs(v)*2*P.r/Math.max(P.eta,1e-9)}
+
+function rec(dt){tm+=dt;const ph=frac(y);
+  const Fb=upthrust(y), Fd=-(stokes(v,ph)+formD(v,ph));
+  hist.push([tm,SURF-y,v,netF(y,v)/MASS(),Fb,Fd,netF(y,v)]);
+  if(hist.length>1800)hist.shift()}
+function step(dt){dt*=SLOW;const K=8,h=dt/K;
+  for(let i=0;i<K;i++){
+    v+=netF(y,v)/MASS()*h; y+=v*h;
+    if(y<FLOOR+P.r){y=FLOOR+P.r;if(v<0)v=0}
+    if(y>TOPY-P.r){y=TOPY-P.r;if(v>0)v=0}}
+  rec(dt)}
+function settle(){const sub=P.rho/P.rf;
+  if(sub<1){let lo=SURF-P.r,hi=SURF+P.r;
+    for(let i=0;i<50;i++){const mid=(lo+hi)/2;(frac(mid)>sub)?lo=mid:hi=mid}
+    y=(lo+hi)/2}
+  else y=SURF-P.r*1.02;
+  v=0;tm=0;hist=[]}
+function drop(){y=TOPY-P.r;v=0;tm=0;hist=[];setPlay(true)}
+function release(){y=FLOOR+P.r;v=0;tm=0;hist=[];setPlay(true)}
+
+function draw(){cx.clearRect(0,0,W,H);
+  const vol=VOL(), m=MASS(), Wt=m*G, sub=P.rho/P.rf, floats=sub<1;
+  const ph=frac(y), Fb=upthrust(y);
+  const Fst=stokes(v,ph), Ffm=formD(v,ph), Fd=-(Fst+Ffm), net=Fb-Wt+Fd;
+  const bx=W*0.28, bw=Math.min(W*0.42,280), bl=bx-bw/2, br=bx+bw/2;
+  const top=30, bot=H-26;
+  const Y=u=>bot-(u-FLOOR)*(bot-top)/(TOPY-FLOOR);
+  const surfY=Y(SURF);
+  rect(bl,surfY,bw,bot-surfY,COL.fill,null,0);
+  line(bl,surfY,br,surfY,COL.blue,2);
+  poly([[bl,top],[bl,bot],[br,bot],[br,top]],COL.ink,2.5);
+  txt(bl+8,surfY-9,'ρ fluid = '+P.rf+' kg m⁻³',COL.blue,11.5);
+  const R=Math.max(9,P.r*(bot-top)/(TOPY-FLOOR)), sy=Y(y);
+  cx.save();cx.beginPath();cx.arc(bx,sy,R,0,7);cx.clip();
+  cx.fillStyle=COL.fill2;cx.fillRect(bx-R,sy-R,2*R,2*R);
+  const cut=Math.max(surfY,sy-R);
+  cx.fillStyle=floats?COL.orange:COL.red;cx.globalAlpha=0.5;
+  cx.fillRect(bx-R,cut,2*R,(sy+R)-cut);cx.restore();
+  ring(bx,sy,R,COL.ink,2.5);
+  const ly=Math.max(top+16,sy-R-9);
+  line(bx+R*0.72,sy-R*0.72,bx+R+12,ly-4,COL.mute,1);
+  txt(bx+R+15,ly,f(ph*100,0)+'% under',COL.mute,11);
+  // force arrows
+  const sc=Math.min(78/Math.max(Wt,1e-9),4000);
+  arrow(bx,sy,bx,sy+Wt*sc,COL.red,3);
+  txt(bx+8,sy+Wt*sc+2,'W = '+sig(Wt,3)+' N',COL.red,11.5);
+  if(Fb>1e-6){arrow(bx,sy,bx,sy-Fb*sc,COL.blue,3);
+    txt(bx+8,sy-Fb*sc-5,'Fb = '+sig(Fb,3)+' N',COL.blue,11.5)}
+  if(Math.abs(Fd)>1e-7){arrow(bx-R-16,sy,bx-R-16,sy-Fd*sc,COL.green,2.5);
+    txt(bx-R-23,sy-Fd*sc,'drag '+sig(Math.abs(Fd),2)+' N',COL.green,11,'right')}
+  // verdict panel
+  const px=Math.min(W-188,br+26);
+  txt(px,56,floats?'FLOATS':'SINKS',floats?COL.good:COL.bad,16,'left',true);
+  txt(px,78,floats?('rests '+f(sub*100,0)+'% submerged'):'falls to the bottom',COL.mute,12);
+  txt(px,112,'ρ object / ρ fluid',COL.mute,11.5);
+  txt(px,132,f(sub,3),floats?COL.good:COL.bad,15,'left',true);
+  const by=160, bw2=132, mx=Math.max(Wt,P.rf*vol*G,1e-12);
+  txt(px,by,'weight',COL.mute,11);
+  rect(px,by+6,bw2*Wt/mx,11,COL.red,null,3);
+  txt(px,by+36,'upthrust if fully under',COL.mute,11);
+  rect(px,by+42,bw2*(P.rf*vol*G)/mx,11,COL.blue,null,3);
+  txt(px,by+72,'upthrust right now',COL.mute,11);
+  rect(px,by+78,bw2*Fb/mx,11,COL.blue,null,3);
+  const re=reynolds();
+  txt(px,H-30,'Reynolds number ≈ '+sig(re,2),COL.mute,11);
+  txt(px,H-14,re<1?'Stokes drag dominates':(re<1000?'both terms matter':'form drag dominates'),
+      COL.mute,11);
+  // readouts
+  S('roW',sig(Wt,3)+' N'); S('roB',sig(P.rf*vol*G,3)+' N');
+  S('roS',floats?f(sub*100,0)+'%':'100%');
+  S('roV',sig(vterm(),3)+' m/s '+(floats?'↑':'↓')); S('roD',f(sub,3)); S('roC',f(v,3)+' m/s');
+  // live equations
+  S('q_r',f(P.r,3)); S('q_V',sig(vol,3)); S('q_rho',String(P.rho));
+  S('q_m',sig(m,3)); S('q_W',sig(Wt,3));
+  S('q_rf',String(P.rf)); S('q_ph',f(ph*100,0)); S('q_Vsub',sig(vol*ph,3));
+  S('q_Fb',sig(Fb,3)); S('q_sub',f(sub,3));
+  const vv=$('q_verdict');
+  if(vv)vv.innerHTML=floats
+    ?'<b class="gd">ρ/ρ<sub>f</sub> &lt; 1</b> → it floats, sunk to '+f(sub*100,0)+'% of its volume'
+    :'<b class="bd">ρ/ρ<sub>f</sub> ≥ 1</b> → even fully under, the upthrust cannot match the weight';
+  S('q_eta',sig(P.eta,3)); S('q_v',f(v,3));
+  S('q_st',sig(Math.abs(Fst),3)); S('q_fm',sig(Math.abs(Ffm),3));
+  S('q_fd',sig(Math.abs(Fd),3)); S('q_re',sig(re,2));
+  S('q_diff',sig(Math.abs(Wt-P.rf*vol*G),3)); S('q_vt',sig(vterm(),3));
+  S('q_net',sig(net,3)); S('q_a',f(net/m,2)); S('q_m2',sig(m,3));
+  // graph
+  const want=[['gd',1,COL.purple,'m'],['gv',2,COL.blue,'m/s'],['ga',3,COL.red,'m/s²'],
+              ['gb',4,COL.blue,'N'],['gr',5,COL.green,'N'],['gn',6,COL.orange,'N']];
+  const ser=[];
+  for(const q of want) if(isOn(q[0]))
+    ser.push({col:q[2],unit:q[3],pts:hist.map(h=>[h[0],h[q[1]]])});
+  plotXY(ser,Math.max(tm,1.5),'time / s');
+}
+['rho','r','rf','eta'].forEach(id=>bind(id,e=>{P[id]=+e.value;
+  $(id+'V').textContent=id==='eta'?(+e.value).toFixed(4)
+    :(id==='r'?(+e.value).toFixed(3):e.value);
+  if(!playing)settle();}));
+bind('fd',()=>{});
+$('play').onclick=()=>setPlay(!playing);
+$('reset').onclick=()=>{settle();setPlay(false)};
+$('drop').onclick=drop;
+$('rel').onclick=release;
+settle();
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>

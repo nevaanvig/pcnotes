@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Collisions and Momentum</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Collisions and Momentum</h1><p class="sub">A.2.10 — momentum survives every collision; kinetic energy is what tells them apart.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Mass A<b><span id="m1V">2</span> kg</b></span><input type="range" id="m1" min="0.5" max="10" step="0.5" value="2"></label><label class="ctl"><span class="lab">Velocity A<b><span id="u1V">5</span> m/s</b></span><input type="range" id="u1" min="-8" max="8" step="0.5" value="5"></label><label class="ctl"><span class="lab">Mass B<b><span id="m2V">3</span> kg</b></span><input type="range" id="m2" min="0.5" max="10" step="0.5" value="3"></label><label class="ctl"><span class="lab">Velocity B<b><span id="u2V">-1</span> m/s</b></span><input type="range" id="u2" min="-8" max="8" step="0.5" value="-1"></label><div class="hr"></div><label class="ctl"><span class="lab">Restitution e<b><span id="eV">1</span></b></span><input type="range" id="e" min="0" max="1" step="0.05" value="1"></label><div class="row"><button class="btn pri" id="play">Play</button><button class="btn" id="reset">Reset</button></div><div class="row"><button class="btn" id="swap">Swap masses</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">v₁ after</div><div class="v" id="ro1">—</div></div><div class="ro"><div class="k">v₂ after</div><div class="v" id="ro2">—</div></div><div class="ro"><div class="k">p before</div><div class="v" id="ro3">—</div></div><div class="ro"><div class="k">p after</div><div class="v" id="ro4">—</div></div><div class="ro"><div class="k">KE lost</div><div class="v" id="ro5">—</div></div><div class="ro"><div class="k">% KE lost</div><div class="v" id="ro6">—</div></div></div>
+<p class="sec">Graphs <span>— press Play and watch the purple line stay dead flat while the orange one steps down</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="gx1"><span class="sw" style="background:var(--ink)"></span><span class="lb" id="gx1L">position A (m)</span></label><label class="chip"><input type="checkbox" id="gx2"><span class="sw" style="background:var(--mute)"></span><span class="lb" id="gx2L">position B (m)</span></label><label class="chip"><input type="checkbox" id="gv1" checked><span class="sw" style="background:var(--blue)"></span><span class="lb" id="gv1L">velocity A (m s⁻¹)</span></label><label class="chip"><input type="checkbox" id="gv2" checked><span class="sw" style="background:var(--green)"></span><span class="lb" id="gv2L">velocity B (m s⁻¹)</span></label><label class="chip"><input type="checkbox" id="gp" checked><span class="sw" style="background:var(--purple)"></span><span class="lb" id="gpL">total momentum (kg m s⁻¹)</span></label><label class="chip"><input type="checkbox" id="gk" checked><span class="sw" style="background:var(--orange)"></span><span class="lb" id="gkL">total kinetic energy (J)</span></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · Momentum is always conserved</h4><div class="fm"><div>m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂</div><div><span class="num" data-k="k_m1"></span>×<span class="num" data-k="k_u1"></span> + <span class="num" data-k="k_m2"></span>×<span class="num" data-k="k_u2"></span> = <span class="num" data-k="k_p"></span> kg m s⁻¹</div><div>after: <span class="num" data-k="k_pa"></span> kg m s⁻¹ ✓</div></div><p class="why">During the collision the two carts push on each other with equal and opposite forces for exactly the same length of time, so the impulses they receive are equal and opposite and the total momentum cannot change. Nothing about the squashiness of the carts enters into it, which is why this one holds for every collision.</p></div><div class="eq"><h4>2 · Restitution sorts the rest</h4><div class="fm"><div>e = (v₂ − v₁)/(u₁ − u₂)</div><div>separation speed = <span class="num" data-k="k_sep"></span> m s⁻¹</div><div>approach speed = <span class="num" data-k="k_app"></span> m s⁻¹</div><div>e = <span class="num" data-k="k_e"></span></div><div><span id="k_type">—</span></div></div><p class="why">One equation is never enough for two unknowns, so you need a second fact about how bouncy the collision is. That is what e measures: the fraction of the approach speed that survives as separation speed. e = 1 is a perfect bounce, e = 0 means they stay stuck together.</p></div><div class="eq"><h4>3 · Solving the pair</h4><div class="fm"><div>v₁ = [(m₁ − em₂)u₁ + (1+e)m₂u₂] / (m₁+m₂) = <span class="num" data-k="k_v1"></span> m s⁻¹</div><div>v₂ = [(m₂ − em₁)u₂ + (1+e)m₁u₁] / (m₁+m₂) = <span class="num" data-k="k_v2"></span> m s⁻¹</div></div><p class="why">These look fearsome but they are just the two equations above solved simultaneously. Two special cases are worth memorising: equal masses with e = 1 simply swap velocities, and a light object bouncing off a very heavy one comes back at almost its original speed.</p></div><div class="eq"><h4>4 · Energy, and the centre of mass</h4><div class="fm"><div>KE before = <span class="num" data-k="k_kb"></span> J → after = <span class="num" data-k="k_ka"></span> J</div><div>lost = <span class="num" data-k="k_lost"></span> J (<span class="num" data-k="k_pct"></span>%)</div><div>v<sub>cm</sub> = (m₁u₁+m₂u₂)/(m₁+m₂) = <span class="num" data-k="k_vcm"></span> m s⁻¹</div><div>in that frame: <span class="num" data-k="k_c1"></span> , <span class="num" data-k="k_c2"></span> → <span class="num" data-k="k_d1"></span> , <span class="num" data-k="k_d2"></span></div></div><p class="why">The lost energy went into heat, sound and permanent dents — it did not vanish, it just left the mechanical account. The last line is the elegant way to see a collision: watch from a frame moving with the centre of mass (the purple marker, which glides on at constant speed through everything) and the two velocities simply reverse and shrink by a factor e.</p></div></div>
+<p class="note"><b>Try this:</b> turn on the momentum and energy traces and press Play. Momentum is a flat line straight through the collision; kinetic energy drops off a cliff at the moment of impact unless e = 1. Now slide e from 1 down to 0 and watch that cliff grow — at e = 0 the carts move off locked together with the largest possible loss. Two cases worth seeing: equal masses with e = 1 and u₂ = 0, where the carts simply swap velocities; and the purple centre-of-mass marker, which slides on at a perfectly constant speed no matter how violent the collision is.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+let P={m1:2,m2:3,u1:5,u2:-1,e:1};
+let x1=-1.6,x2=1.6,v1=0,v2=0,done=false,t=0,hist=[];
+function after(){const{m1,m2,u1,u2,e}=P,M=m1+m2;
+  return[((m1-e*m2)*u1+(1+e)*m2*u2)/M, ((m2-e*m1)*u2+(1+e)*m1*u1)/M]}
+function vcm(){return (P.m1*P.u1+P.m2*P.u2)/(P.m1+P.m2)}
+function rec(){hist.push([t,x1,x2,v1,v2,P.m1*v1+P.m2*v2,
+  0.5*P.m1*v1*v1+0.5*P.m2*v2*v2]); if(hist.length>1800)hist.shift()}
+function reset(){x1=-1.7;x2=1.7;v1=P.u1;v2=P.u2;done=false;t=0;hist=[];rec()}
+function step(dt){const d=dt*0.9;t+=d;
+  const r1=0.13+P.m1*0.016, r2=0.13+P.m2*0.016;
+  x1+=v1*d;x2+=v2*d;
+  if(!done&&x2-x1<=r1+r2){const o=after();v1=o[0];v2=o[1];done=true;
+    const ov=(r1+r2)-(x2-x1);x1-=ov/2;x2+=ov/2}
+  rec();
+  if(x1<-3.4||x1>3.4||x2<-3.4||x2>3.4)setPlay(false)}
+function draw(){cx.clearRect(0,0,W,H);
+  const o=after();
+  const pB=P.m1*P.u1+P.m2*P.u2, pA=P.m1*o[0]+P.m2*o[1];
+  const kB=0.5*P.m1*P.u1*P.u1+0.5*P.m2*P.u2*P.u2;
+  const kA=0.5*P.m1*o[0]*o[0]+0.5*P.m2*o[1]*o[1];
+  const cyp=H*0.40, sc=W/8.2, mid=W/2;
+  line(24,cyp+34,W-24,cyp+34,COL.ink,3);
+  for(let g=-4;g<=4;g++){const gx=mid+g*sc;if(gx>20&&gx<W-20)
+    line(gx,cyp+34,gx,cyp+40,COL.grid,1.5)}
+  // centre of mass marker
+  const xcm=(P.m1*x1+P.m2*x2)/(P.m1+P.m2), cmx=mid+xcm*sc;
+  line(cmx,cyp-14,cmx,cyp+44,COL.purple,1.5,[5,4]);
+  dot(cmx,cyp+44,4,COL.purple);
+  txt(cmx,cyp+58,'centre of mass',COL.purple,10.5,'center');
+  function cart(x,m,v,col,nm){const r=(0.13+m*0.016)*sc, px=mid+x*sc;
+    rect(px-r,cyp+34-r*1.25,r*2,r*1.25,col,COL.ink,0,5);
+    txt(px,cyp+34-r*1.25-9,nm+'  '+m+' kg',COL.ink,11.5,'center');
+    if(Math.abs(v)>0.05){arrow(px,cyp+12,px+v*13,cyp+12,COL.blue,2.6);
+      txt(px+v*13+(v>0?7:-7),cyp+16,f(v,2),COL.blue,11.5,v>0?'left':'right')}}
+  cart(x1,P.m1,v1,COL.fill,'A');cart(x2,P.m2,v2,COL.fill2,'B');
+  const ty=cyp+96;
+  txt(24,ty,'Before',COL.mute,11.5,'left',true);
+  txt(24,ty+20,'u₁ = '+f(P.u1,1)+' m/s      u₂ = '+f(P.u2,1)+' m/s',COL.ink,12.5);
+  txt(24,ty+46,'After',COL.mute,11.5,'left',true);
+  txt(24,ty+66,'v₁ = '+f(o[0],2)+' m/s      v₂ = '+f(o[1],2)+' m/s',COL.ink,12.5);
+  const bx=Math.min(W*0.52,W-250), bw=Math.min(190,W-bx-26);
+  const mp=Math.max(Math.abs(pB),Math.abs(pA),1e-6), mk=Math.max(kB,kA,1e-6);
+  txt(bx,ty,'Momentum',COL.mute,11.5,'left',true);
+  rect(bx,ty+8,bw*Math.abs(pB)/mp,11,COL.blue,null,3);
+  rect(bx,ty+24,bw*Math.abs(pA)/mp,11,COL.blue,null,3);
+  txt(bx+bw+8,ty+18,f(pB,2)+' → '+f(pA,2),COL.ink,11.5);
+  txt(bx,ty+56,'Kinetic energy',COL.mute,11.5,'left',true);
+  rect(bx,ty+64,bw*kB/mk,11,COL.orange,null,3);
+  rect(bx,ty+80,bw*kA/mk,11,COL.orange,null,3);
+  txt(bx+bw+8,ty+74,f(kB,2)+' → '+f(kA,2)+' J',COL.ink,11.5);
+  const lost=kB-kA, typ=P.e>0.99?'ELASTIC':(P.e<0.01?'PERFECTLY INELASTIC':'INELASTIC');
+  rect(24,16,Math.min(360,W-48),27,COL.panel,P.e>0.99?COL.good:COL.orange,0,8);
+  txt(36,34,typ+'   —   KE lost '+f(100*lost/Math.max(kB,1e-9),0)
+      +'%   —   v of centre of mass '+f(vcm(),2)+' m/s',
+      P.e>0.99?COL.good:COL.orange,12.5,'left',true);
+  S('ro1',f(o[0],2)+' m/s'); S('ro2',f(o[1],2)+' m/s'); S('ro3',f(pB,2));
+  S('ro4',f(pA,2)); S('ro5',f(lost,2)+' J');
+  S('ro6',f(100*lost/Math.max(kB,1e-9),0)+'%');
+  // equations
+  S('k_m1',f(P.m1,1)); S('k_m2',f(P.m2,1));
+  S('k_u1',f(P.u1,1)); S('k_u2',f(P.u2,1));
+  S('k_v1',f(o[0],2)); S('k_v2',f(o[1],2));
+  S('k_p',f(pB,2)); S('k_pa',f(pA,2));
+  S('k_e',f(P.e,2)); S('k_sep',f(o[1]-o[0],2)); S('k_app',f(P.u1-P.u2,2));
+  S('k_kb',f(kB,2)); S('k_ka',f(kA,2)); S('k_lost',f(lost,2));
+  S('k_pct',f(100*lost/Math.max(kB,1e-9),0));
+  S('k_vcm',f(vcm(),2));
+  S('k_c1',f(P.u1-vcm(),2)); S('k_c2',f(P.u2-vcm(),2));
+  S('k_d1',f(o[0]-vcm(),2)); S('k_d2',f(o[1]-vcm(),2));
+  const vd=$('k_type');
+  if(vd)vd.innerHTML=P.e>0.99?'<b class="gd">e = 1, elastic</b> — kinetic energy is conserved too'
+    :(P.e<0.01?'<b class="bd">e = 0, perfectly inelastic</b> — they move off together, maximum loss'
+              :'<b class="bd">0 &lt; e &lt; 1, inelastic</b> — some kinetic energy becomes heat and sound');
+  // graph
+  const want=[['gx1',1,'m',COL.ink],['gx2',2,'m',COL.mute],['gv1',3,'m/s',COL.blue],
+              ['gv2',4,'m/s',COL.green],['gp',5,'kg m/s',COL.purple],['gk',6,'J',COL.orange]];
+  const ser=[];
+  for(const q of want) if(isOn(q[0]))
+    ser.push({col:q[3],unit:q[2],pts:hist.map(h=>[h[0],h[q[1]]])});
+  plotXY(ser,Math.max(t,1.2),'time / s');
+}
+['m1','m2','u1','u2','e'].forEach(id=>bind(id,el=>{P[id]=+el.value;
+  $(id+'V').textContent=(id==='e')?(+el.value).toFixed(2):(+el.value).toFixed(1);
+  if(playing){                       // live: adjust without restarting
+    if(!done){v1=P.u1;v2=P.u2}       // still approaching — change their speeds now
+    else{const o=after();v1=o[0];v2=o[1]}}  // already hit — re-apply the new outcome
+  else reset()}));
+$('play').onclick=()=>{if(done&&(x1<-3.4||x1>3.4||x2<-3.4||x2>3.4))reset();setPlay(!playing)};
+$('reset').onclick=()=>{reset();setPlay(false)};
+$('swap').onclick=()=>{const t1=P.m1;P.m1=P.m2;P.m2=t1;
+  $('m1').value=P.m1;$('m2').value=P.m2;$('m1V').textContent=f(P.m1,1);$('m2V').textContent=f(P.m2,1);
+  reset();setPlay(false)};
+reset();
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rolling Race</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Rolling Race</h1><p class="sub">A.4.6 — on a slope, only the shape factor I/MR² decides who wins. Mass and radius drop out.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Slope angle<b><span id="thV">20</span> °</b></span><input type="range" id="th" min="5" max="40" step="1" value="20"></label><label class="ctl"><span class="lab">Slope length<b><span id="lenV">6</span> m</b></span><input type="range" id="len" min="2" max="12" step="0.5" value="6"></label><div class="hr"></div><div class="cap">Racers</div><label class="chk"><input type="checkbox" id="s0" checked> Solid sphere</label><label class="chk"><input type="checkbox" id="s1" checked> Solid disc</label><label class="chk"><input type="checkbox" id="s2" checked> Hollow sphere</label><label class="chk"><input type="checkbox" id="s3" checked> Hoop / ring</label><label class="chk"><input type="checkbox" id="s4"> Sliding block (no friction)</label><div class="hr"></div><div class="cap">Equations for</div><select id="eqs"><option value="0">Solid sphere</option><option value="1">Solid disc</option><option value="2">Hollow sphere</option><option value="3">Hoop / ring</option><option value="4">Sliding block</option></select><div class="row"><button class="btn pri" id="play">Play</button><button class="btn" id="reset">Reset</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"></div>
+<table class="tb" id="tb"><thead><tr><th>Shape</th><th>I/MR²</th><th>a (m/s²)</th><th>v at base</th><th>Time</th><th>KE rotational</th></tr></thead><tbody></tbody></table><p class="sec">Graphs <span>— one line per racer — the gradient of each speed line is that shape's acceleration</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip" style="gap:9px">plot <select id="gq" style="width:auto;padding:3px 6px;font-size:12px"><option value="v">speed v (m s⁻¹)</option><option value="d">distance down the slope (m)</option></select></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · Energy has two places to go</h4><div class="fm"><div>mgh = ½mv² + ½Iω²</div><div>rolling without slipping: ω = v/R</div><div>and I = kMR², so ½Iω² = ½kmv²</div><div>mgh = ½mv²(1 + k)</div></div><p class="why">A rolling object is doing two things at once — moving and spinning — and the drop in height has to pay for both. The shape factor k = I/MR² is the whole story: it says how much rotational energy the object demands for every unit of forward motion.</p></div><div class="eq"><h4>2 · Speed at the bottom</h4><div class="fm"><div>v = √(2gh / (1 + k))</div><div>for the <span class="num" data-k="r_name">solid sphere</span>: k = <span class="num" data-k="r_k"></span></div><div>h = L sin θ = <span class="num" data-k="r_L"></span> × sin <span class="num" data-k="r_th"></span>° = <span class="num" data-k="r_h"></span> m</div><div>v = <span class="num" data-k="r_v"></span> m s⁻¹</div></div><p class="why">Both m and R cancel completely — a marble and a bowling ball of the same shape arrive at exactly the same speed. Only k matters, and k depends purely on how the mass is arranged relative to the axis, not on how much of it there is.</p></div><div class="eq"><h4>3 · Acceleration and time</h4><div class="fm"><div>a = g sin θ / (1 + k) = <span class="num" data-k="r_gs"></span> / <span class="num" data-k="r_1k"></span> = <span class="num" data-k="r_a"></span> m s⁻²</div><div>a is constant, so L = ½at² → t = <span class="num" data-k="r_t"></span> s</div></div><p class="why">Because a is constant the whole way down, every SUVAT equation applies. Compare a with g sin θ, the frictionless slide: the 1 + k in the denominator is the toll that spinning charges. A hoop pays double.</p></div><div class="eq"><h4>4 · Where the energy ends up</h4><div class="fm"><div>rotational share = k/(1+k) = <span class="num" data-k="r_rot"></span>%</div><div>translational share = 1/(1+k) = <span class="num" data-k="r_tr"></span>%</div><div>check: gh = <span class="num" data-k="r_gh"></span> = ½v²(1+k) = <span class="num" data-k="r_half"></span> J kg⁻¹</div></div><p class="why">A solid sphere diverts only 29% of its energy into spin, a disc a third, a hoop a full half — which is exactly the finishing order, every time. The sliding block diverts none at all, so it always wins. Friction is what makes the rolling objects spin, but it does no work here: the contact point is instantaneously stationary, so no energy is lost to it.</p></div></div>
+<p class="note"><b>Try this:</b> race them all. The order never changes, because a = g sin θ / (1 + I/MR²) contains no mass and no radius — a marble beats a cannonball-sized hoop every time. The speed graph shows why: four straight lines from the origin with different gradients, and those gradients are the accelerations. The frictionless sliding block always wins outright, since none of its energy is diverted into spinning. The last column of the table is the share of kinetic energy that ends up rotational: a third for a disc, two-fifths for a hollow sphere, a full half for a hoop.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const G=9.81;
+const SH=[{n:'Solid sphere',k:0.4,c:'orange',fill:true},
+          {n:'Solid disc',k:0.5,c:'blue',fill:true},
+          {n:'Hollow sphere',k:2/3,c:'purple',fill:false},
+          {n:'Hoop / ring',k:1.0,c:'red',fill:false},
+          {n:'Sliding block',k:0.0,c:'green',block:true}];
+let P={th:20,len:6},on=[true,true,true,true,false],t=0,EQ=0,GQ='v';
+let DD=[0,0,0,0,0], VV=[0,0,0,0,0], FIN=[0,0,0,0,0], hist=[];
+function acc(k){return G*Math.sin(P.th*Math.PI/180)/(1+k)}
+function tFin(k){return Math.sqrt(2*P.len/acc(k))}
+function rreset(){t=0;DD=[0,0,0,0,0];VV=[0,0,0,0,0];FIN=[0,0,0,0,0];hist=[]}
+function allHome(){let all=true;
+  SH.forEach((s,i)=>{if(on[i]&&DD[i]<P.len)all=false});return all}
+function step(dt){const h=dt*0.75;t+=h;
+  SH.forEach((s,i)=>{if(!on[i])return;
+    if(DD[i]<P.len){FIN[i]=0;
+      VV[i]+=acc(s.k)*h; DD[i]+=VV[i]*h;        // integrated, so a mid-race
+      if(DD[i]>=P.len){DD[i]=P.len;FIN[i]=t}}});// slider change bends the curve
+  hist.push([t,DD.slice(),VV.slice()]);
+  if(hist.length>1800)hist.shift();
+  if(allHome())setPlay(false)}
+function draw(){cx.clearRect(0,0,W,H);
+  const a=P.th*Math.PI/180;
+  const pad=34, maxW=W-2*pad, maxH=H-104;
+  const nOn=on.filter(Boolean).length, LANE=26, off0=(nOn-1)*LANE;
+  let ln=Math.min((maxW-off0*Math.sin(a))/Math.cos(a),
+                  (maxH-off0*Math.cos(a))/Math.max(Math.sin(a),1e-6));
+  const x0=pad;
+  const sx=x0, sy=H-52-ln*Math.sin(a), ex=x0+ln*Math.cos(a), ey=H-52;
+  fillPoly([[sx,sy],[ex,ey],[sx,ey]],COL.fill);
+  poly([[sx,sy],[ex,ey]],COL.ink,3);
+  line(sx,ey,ex,ey,COL.ink,2);
+  arc2(ex,ey,44,Math.PI,Math.PI+a,COL.ink,1.5);
+  txt(ex-54,ey-10,P.th+'°',COL.ink,13,'right',true);
+  line(ex,ey,ex,ey-36,COL.mute,2,[5,4]);txt(ex-4,ey-42,'finish',COL.mute,11,'right');
+  const R=13;
+  let lane=0;
+  SH.forEach((s,i)=>{if(!on[i])return;
+    const d=DD[i];
+    const fr=Math.min(1,d/P.len);
+    const ofs=(nOn-1-lane)*LANE;
+    const onx=Math.sin(a), ony=-Math.cos(a);
+    const px=sx+(ex-sx)*fr+onx*ofs, py=sy+(ey-sy)*fr+ony*ofs;
+    const nx=onx*R, ny=ony*R;
+    const col=COL[s.c];
+    line(sx+onx*ofs,sy+ony*ofs,ex+onx*ofs,ey+ony*ofs,COL.grid,1.5);
+    if(s.block){cx.save();cx.translate(px+nx*0.9,py+ny*0.9);cx.rotate(-a);
+      rect(-R,-R*0.9,R*2,R*0.9,col,COL.ink,0,3);cx.restore()}
+    else{const cx2=px+nx,cy2=py+ny;
+      cx.save();cx.beginPath();cx.arc(cx2,cy2,R,0,7);
+      cx.fillStyle=s.fill?col:COL.panel;cx.globalAlpha=s.fill?0.5:1;cx.fill();cx.globalAlpha=1;
+      cx.strokeStyle=col;cx.lineWidth=s.fill?2:3.5;cx.stroke();cx.restore();
+      const rot=d/0.15;
+      line(cx2,cy2,cx2+R*0.82*Math.cos(rot),cy2+R*0.82*Math.sin(rot),col,2);
+      line(cx2,cy2,cx2-R*0.82*Math.cos(rot),cy2-R*0.82*Math.sin(rot),col,2)}
+    lane++});
+  let yy=26;
+  txt(W-16,yy,'t = '+f(t,2)+' s',COL.mute,12.5,'right');
+  SH.forEach((s,i)=>{if(!on[i])return;yy+=21;
+    dot(W-200,yy-4,5,COL[s.c]);
+    txt(W-188,yy,s.n,COL.ink,12);
+    txt(W-16,yy,FIN[i]>0?(f(FIN[i],2)+' s'):'…',FIN[i]>0?COL[s.c]:COL.mute,12,'right')});
+  const rows=SH.filter((s,i)=>on[i]);
+  const tb=document.querySelector('#tb tbody');
+  if(tb)tb.innerHTML=rows.map(s=>{const A=acc(s.k),v=Math.sqrt(2*A*P.len),
+    rotF=s.k/(1+s.k);
+    return '<tr><td>'+s.n+'</td><td>'+(s.block?'—':f(s.k,2))+'</td><td>'+f(A,2)+
+      '</td><td>'+f(v,2)+'</td><td>'+f(tFin(s.k),2)+'</td><td>'+f(rotF*100,0)+'%</td></tr>'}).join('');
+  // equations for the chosen shape
+  const s=SH[EQ], k=s.k, A=acc(k), vF=Math.sqrt(2*A*P.len);
+  const h=P.len*Math.sin(a);
+  S('r_name',s.n); S('r_k',s.block?'0 (it does not spin)':f(k,3));
+  S('r_th',String(P.th)); S('r_L',f(P.len,1)); S('r_h',f(h,2));
+  S('r_a',f(A,3)); S('r_v',f(vF,3)); S('r_t',f(tFin(k),3));
+  S('r_gs',f(G*Math.sin(a),3)); S('r_1k',f(1+k,3));
+  S('r_rot',f(100*k/(1+k),1)); S('r_tr',f(100/(1+k),1));
+  S('r_gh',f(G*h,2)); S('r_half',f(0.5*vF*vF*(1+k),2));
+  // graph
+  const ser=[];
+  SH.forEach((s2,i)=>{if(!on[i])return;
+    const pts=hist.map(h=>[h[0], GQ==='v'?h[2][i]:h[1][i]]);
+    if(pts.length>1)ser.push({col:COL[s2.c],unit:GQ==='v'?'m/s':'m',pts:pts})});
+  plotXY(ser,Math.max(t,0.8),'time / s');
+}
+bind('th',e=>{P.th=+e.value;$('thV').textContent=e.value;if(!playing)rreset()});
+bind('len',e=>{P.len=+e.value;$('lenV').textContent=e.value;if(!playing)rreset()});
+SH.forEach((s,i)=>bind('s'+i,e=>{on[i]=e.checked}));
+bind('eqs',e=>{EQ=+e.value});
+bind('gq',e=>{GQ=e.value});
+$('play').onclick=()=>{if(allHome())rreset();setPlay(!playing)};
+$('reset').onclick=()=>{rreset();setPlay(false)};
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>

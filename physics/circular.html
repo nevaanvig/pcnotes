@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Circular Motion</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Circular Motion</h1><p class="sub">A.2.8 — the centripetal force is a role, not a new force. Something always has to supply it.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Situation</span><select id="mode"><option value="loop">Vertical loop</option><option value="cone">Conical pendulum</option><option value="bank">Banked curve</option></select></label><label class="ctl"><span class="lab">Loop radius<b><span id="rV">1.2</span> m</b></span><input type="range" id="r" min="0.4" max="2.5" step="0.1" value="1.2"></label><label class="ctl"><span class="lab">Speed at the top<b><span id="vtV">5</span> m/s</b></span><input type="range" id="vt" min="1" max="12" step="0.5" value="5"></label><label class="ctl"><span class="lab">String length<b><span id="LV">1.0</span> m</b></span><input type="range" id="L" min="0.3" max="1.8" step="0.1" value="1.0"></label><label class="ctl"><span class="lab">Angle<b><span id="thV">30</span> °</b></span><input type="range" id="th" min="5" max="70" step="1" value="30"></label><label class="ctl"><span class="lab">Bend radius<b><span id="rbV">60</span> m</b></span><input type="range" id="rb" min="20" max="200" step="5" value="60"></label><label class="ctl"><span class="lab">Friction μ<b><span id="muV">0.6</span></b></span><input type="range" id="mu" min="0" max="1.2" step="0.05" value="0.6"></label><label class="ctl"><span class="lab">Mass<b><span id="mV">0.5</span> kg</b></span><input type="range" id="m" min="0.1" max="5" step="0.1" value="0.5"></label><div class="row"><button class="btn pri" id="play">Play</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">Speed at bottom</div><div class="v" id="ro1">—</div></div><div class="ro"><div class="k">N at bottom</div><div class="v" id="ro2">—</div></div><div class="ro"><div class="k">N at top</div><div class="v" id="ro3">—</div></div><div class="ro"><div class="k">Min speed at top</div><div class="v" id="ro4">—</div></div><div class="ro"><div class="k">N difference</div><div class="v" id="ro5">—</div></div><div class="ro"><div class="k">6mg</div><div class="v" id="ro6">—</div></div></div>
+<p class="sec">Graphs <span>— these are parameter sweeps, not recordings — the dashed line marks where you are now</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="g1" checked><span class="sw" style="background:var(--blue)"></span><span class="lb" id="g1L">—</span></label><label class="chip"><input type="checkbox" id="g2" checked><span class="sw" style="background:var(--red)"></span><span class="lb" id="g2L">—</span></label><label class="chip"><input type="checkbox" id="g3" checked><span class="sw" style="background:var(--green)"></span><span class="lb" id="g3L">—</span></label><label class="chip"><input type="checkbox" id="g4" checked><span class="sw" style="background:var(--purple)"></span><span class="lb" id="g4L">—</span></label></div><p class="sec">The equations behind it <span>— numbers update live, and the cards follow the mode you pick</span></p><div class="eqwrap" id="eq_loop"><div class="eq"><h4>1 · What the loop demands</h4><div class="fm"><div>a<sub>c</sub> = v²/r, pointing at the centre</div><div>so ΣF towards the centre = mv²/r = <span class="num" data-k="c_cp"></span> N</div><div>at θ = <span class="num" data-k="c_th">0</span>° from the bottom</div></div><p class="why">Centripetal force is a job, not a new kind of force. Nothing ever appears in a free-body diagram labelled 'centripetal' — you draw the real forces (here the track's normal force and gravity), add up their components towards the centre, and set that total equal to mv²/r.</p></div><div class="eq"><h4>2 · At the top and at the bottom</h4><div class="fm"><div>top: N + mg = mv²/r → N = <span class="num" data-k="c_Nt"></span> N</div><div>bottom: N − mg = mv²/r → N = <span class="num" data-k="c_Nb"></span> N</div><div>general: N = mv²/r + mg cos θ = <span class="num" data-k="c_cp"></span> + <span class="num" data-k="c_mgc"></span> = <span class="num" data-k="c_Nnow"></span> N</div></div><p class="why">At the top, gravity points the same way as the needed force, so the track has less to do. At the bottom it points the opposite way, so the track must supply the centripetal force <i>and</i> hold the weight up. That is why you feel heaviest at the bottom of a loop.</p></div><div class="eq"><h4>3 · The minimum speed</h4><div class="fm"><div>at the limit the track stops pushing: N = 0</div><div>then mg alone must equal mv²/r</div><div>v<sub>min</sub> = √(gr) = <span class="num" data-k="c_vmin"></span> m s⁻¹</div><div><span id="c_verdict">—</span></div></div><p class="why">Set N = 0 at the top and the mass cancels: a heavy car and a light one need exactly the same minimum speed. Below it, the required force is more than gravity can supply at that radius, so the object simply stops following the circle and becomes a projectile.</p></div><div class="eq"><h4>4 · The 6mg result</h4><div class="fm"><div>N<sub>bottom</sub> − N<sub>top</sub> = <span class="num" data-k="c_Nb"></span> − <span class="num" data-k="c_Nt"></span> = <span class="num" data-k="c_diff"></span> N</div><div>6mg = 6 × <span class="num" data-k="c_m"></span> × 9.81 = <span class="num" data-k="c_6mg"></span> N</div></div><p class="why">Energy conservation gives v<sub>bottom</sub>² = v<sub>top</sub>² + 4gr, and substituting that into the two N equations makes everything cancel except 6mg. Change the speed, the radius, anything — the difference stays 6mg. It is one of the neatest results in the whole topic.</p></div></div><div class="eqwrap" id="eq_cone" style="display:none"><div class="eq"><h4>1 · Two directions, two equations</h4><div class="fm"><div>vertical (no acceleration): T cos θ = mg</div><div><span class="num" data-k="n_Tc"></span> = <span class="num" data-k="n_mg"></span> N ✓</div><div>horizontal (centripetal): T sin θ = mv²/r</div><div><span class="num" data-k="n_Ts"></span> N</div></div><p class="why">The bob is not in equilibrium — it is accelerating towards the centre of its circle the whole time. But it is not accelerating vertically, so the vertical components must still cancel exactly. Splitting the tension into those two directions is the entire solution.</p></div><div class="eq"><h4>2 · The geometry</h4><div class="fm"><div>r = L sin θ = <span class="num" data-k="n_L"></span> × sin <span class="num" data-k="n_th"></span>° = <span class="num" data-k="n_r"></span> m</div><div>T = mg / cos θ = <span class="num" data-k="n_T"></span> N</div><div>T / mg = <span class="num" data-k="n_ratio"></span>×</div></div><p class="why">The radius of the circle is not the string length — it is the string length times sin θ. And because cos θ &lt; 1, the tension is always bigger than the weight, and it runs away to infinity as the string approaches horizontal. A perfectly horizontal string is impossible: there would be no vertical component left to hold the bob up.</p></div><div class="eq"><h4>3 · Dividing one by the other</h4><div class="fm"><div>T sin θ / T cos θ = (mv²/r)/(mg)</div><div>tan θ = v²/gr = <span class="num" data-k="n_tan"></span></div><div>v = √(gr tan θ) = <span class="num" data-k="n_v"></span> m s⁻¹</div></div><p class="why">Dividing the two equations kills both T and m in one move. What is left connects only the angle, the speed and the radius — and it is exactly the same relationship as the banked curve, because both are the same physics: one slanted force doing two jobs at once.</p></div><div class="eq"><h4>4 · The period</h4><div class="fm"><div>period = 2π√(L cos θ / g) = <span class="num" data-k="n_per"></span> s</div><div>mass m = <span class="num" data-k="n_m"></span> kg does not appear</div></div><p class="why">L cos θ is the vertical depth of the bob below the pivot, so a conical pendulum keeps time like a simple pendulum of that depth. Swing it wider and faster and the period actually gets <i>shorter</i>, which is the opposite of most people's intuition.</p></div></div><div class="eqwrap" id="eq_bank" style="display:none"><div class="eq"><h4>1 · The frictionless case</h4><div class="fm"><div>vertical: N cos θ = mg → N = <span class="num" data-k="b_N"></span> N</div><div>horizontal: N sin θ = mv²/r</div><div>divide: tan θ = v²/gr = <span class="num" data-k="b_tan"></span></div></div><p class="why">Tilt the road and the normal force tilts with it, so part of it now points towards the centre of the bend. That horizontal slice is what turns the car — no friction required. This is why racetracks and motorway slip roads are banked at all.</p></div><div class="eq"><h4>2 · The design speed</h4><div class="fm"><div>v = √(gr tan θ) = <span class="num" data-k="b_vi"></span> m s⁻¹</div><div>= <span class="num" data-k="b_kmh"></span> km h⁻¹ &nbsp;(r = <span class="num" data-k="b_r"></span> m, θ = <span class="num" data-k="b_th"></span>°)</div></div><p class="why">Every banked curve has exactly one speed at which it works perfectly with no sideways grip needed. Note the mass has cancelled again — a loaded truck and a motorbike share the same design speed, which is precisely why the engineer can choose one angle for all traffic.</p></div><div class="eq"><h4>3 · Friction widens the window</h4><div class="fm"><div>fastest: v = √(gr(tan θ + μ)/(1 − μ tan θ)) = <span class="num" data-k="b_vmax"></span> m s⁻¹</div><div>slowest: v = √(gr(tan θ − μ)/(1 + μ tan θ)) = <span class="num" data-k="b_vmin"></span> m s⁻¹</div><div>μ = <span class="num" data-k="b_mu"></span></div></div><p class="why">Above the design speed the car tends to slide up the bank, so friction acts down the slope; below it the car tends to slip down, so friction acts up. Swapping that sign is the only difference between the two formulas. When μ tan θ reaches 1 the denominator vanishes and there is no upper limit at all.</p></div><div class="eq"><h4>4 · Why it feels different</h4><div class="fm"><div>N = mg / cos θ = <span class="num" data-k="b_N"></span> N, versus mg = <span class="num" data-k="b_mg"></span> N</div></div><p class="why">On a banked turn the seat pushes on you harder than your own weight, and the extra push is what you feel pressing you into the seat. The graph shows N/mg climbing steeply past about 50° — which is why heavily banked turns are punishing for the driver.</p></div></div>
+<p class="note"><b>Try this:</b> in the vertical loop, drop the speed at the top until the warning turns red — that threshold is exactly √(gr), where gravity alone supplies the whole centripetal force. The graph makes the rest obvious: N and mv²/r rise and fall together, separated everywhere by mg cos θ, and N at the bottom minus N at the top is always 6mg no matter what you change. In the other two modes you land on the same equation, tan θ = v²/gr, because both resolve one slanted force into a vertical part that balances the weight and a horizontal part that turns the object.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const G=9.81;
+let M='loop', P={r:1.2,m:0.5,vt:5,L:1.0,th:30,rb:60,mu:0.6}, ph=0;
+function loopState(){const vb2=P.vt*P.vt+4*G*P.r;
+  const v2=(th)=>Math.max(0,vb2-2*G*P.r*(1-Math.cos(th)));
+  const N=(th)=>P.m*v2(th)/P.r+P.m*G*Math.cos(th);
+  return{vb2,v2,N,vmin:Math.sqrt(G*P.r),ok:P.vt>=Math.sqrt(G*P.r)}}
+function coneState(){const a=P.th*Math.PI/180;
+  const r=P.L*Math.sin(a), v=Math.sqrt(G*r*Math.tan(a)), T=P.m*G/Math.cos(a);
+  const per=2*Math.PI*Math.sqrt(P.L*Math.cos(a)/G);
+  return{a,r,v,T,per}}
+function bankState(th,mu){const a=(th===undefined?P.th:th)*Math.PI/180;
+  const m2=(mu===undefined?P.mu:mu);
+  const vi=Math.sqrt(G*P.rb*Math.tan(a));
+  const den=1-m2*Math.tan(a);
+  const vmax=den>0.02?Math.sqrt(G*P.rb*(Math.tan(a)+m2)/den):Infinity;
+  const num=Math.tan(a)-m2;
+  const vmin=num>0?Math.sqrt(G*P.rb*num/(1+m2*Math.tan(a))):0;
+  return{a,vi,vmax,vmin,N:P.m*G/Math.cos(a)}}
+function step(dt){
+  if(M==='loop'){const S=loopState();ph+=Math.sqrt(S.v2(ph))/P.r*dt*0.8;if(ph>7)ph-=2*Math.PI}
+  else{const a=P.th*Math.PI/180;
+    const w=(M==='cone')?Math.sqrt(G/(P.L*Math.cos(a))):1.2;ph+=w*dt*0.5;if(ph>7)ph-=2*Math.PI}}
+
+function drawLoop(){const LS=loopState();
+  const cxp=W*0.33,cyp=H*0.50,R=Math.min(W*0.22,H*0.34);
+  ring(cxp,cyp,R,COL.mute,3);
+  const th=ph, bx=cxp+R*Math.sin(th), by=cyp+R*Math.cos(th);
+  const v=Math.sqrt(LS.v2(th)), N=LS.N(th);
+  const inx=(cxp-bx)/R, iny=(cyp-by)/R;
+  const sc=90/Math.max(LS.N(0),P.m*G*2.2);
+  arrow(bx,by,bx,by+P.m*G*sc,COL.red,2.6);
+  txt(bx+8,by+P.m*G*sc+12,'mg = '+f(P.m*G,1)+' N',COL.red,11.5);
+  if(N>0.05){arrow(bx,by,bx+inx*N*sc,by+iny*N*sc,COL.blue,2.8);
+    txt(bx+inx*N*sc+8*inx,by+iny*N*sc+10*iny,'N = '+f(N,1)+' N',COL.blue,11.5,inx>0?'left':'right')}
+  const tx2=Math.cos(th),ty2=-Math.sin(th);
+  arrow(bx,by,bx+tx2*v*7,by+ty2*v*7,COL.green,2.4);
+  dot(bx,by,8,COL.ink);
+  txt(cxp,cyp-R-16,'top',COL.mute,11,'center');
+  txt(cxp,cyp+R+46,'bottom',COL.mute,11,'center');
+  const px=Math.min(W-200,cxp+R+54);
+  txt(px,60,LS.ok?'COMPLETES THE LOOP':'FALLS OFF / GOES SLACK',LS.ok?COL.good:COL.bad,14,'left',true);
+  txt(px,82,'minimum v at top = √(gr) = '+f(LS.vmin,2)+' m/s',COL.mute,12);
+  const rows=[['at the top','N + mg = mv²/r',LS.N(Math.PI)],
+              ['at the side','only N is centripetal',LS.N(Math.PI/2)],
+              ['at the bottom','N − mg = mv²/r',LS.N(0)]];
+  let yy=120;for(const[a,b,c]of rows){txt(px,yy,a,COL.ink,12.5,'left',true);
+    txt(px,yy+17,b,COL.mute,11.5);txt(px,yy+34,'N = '+f(c,1)+' N',COL.blue,12.5,'left',true);yy+=62}
+  S('ro1',f(Math.sqrt(LS.vb2),2)+' m/s'); S('ro2',f(LS.N(0),1)+' N');
+  S('ro3',f(LS.N(Math.PI),1)+' N'); S('ro4',f(LS.vmin,2)+' m/s');
+  S('ro5',f(LS.N(0)-LS.N(Math.PI),1)+' N'); S('ro6',f(6*P.m*G,1)+' N');
+  // equations
+  S('c_m',f(P.m,2)); S('c_r',f(P.r,2)); S('c_vt',f(P.vt,2));
+  S('c_vb',f(Math.sqrt(LS.vb2),2)); S('c_vmin',f(LS.vmin,2));
+  S('c_Nt',f(LS.N(Math.PI),2)); S('c_Nb',f(LS.N(0),2));
+  S('c_6mg',f(6*P.m*G,2)); S('c_diff',f(LS.N(0)-LS.N(Math.PI),2));
+  S('c_th',f(th*180/Math.PI,0)); S('c_vnow',f(v,2)); S('c_Nnow',f(N,2));
+  S('c_cp',f(P.m*v*v/P.r,2)); S('c_mgc',f(P.m*G*Math.cos(th),2));
+  const vd=$('c_verdict');
+  if(vd)vd.innerHTML=LS.ok?'<b class="gd">v<sub>top</sub> ≥ √(gr)</b> → it stays on the track'
+                         :'<b class="bd">v<sub>top</sub> &lt; √(gr)</b> → it leaves the track before the top';
+  // graph: everything as a function of angle round the loop
+  const pts=[[],[],[],[]];
+  for(let d=0;d<=360;d+=2){const t=d*Math.PI/180;
+    pts[0].push([d,LS.N(t)]); pts[1].push([d,P.m*LS.v2(t)/P.r]);
+    pts[2].push([d,P.m*G*Math.cos(t)]); pts[3].push([d,Math.sqrt(LS.v2(t))])}
+  return{pts,x:'angle from the bottom / °',xmax:360,cur:th*180/Math.PI,
+         u:['N','mv²/r','mg cosθ','v'],un:['N','N','N','m/s']}}
+
+function drawCone(){const C=coneState(), a=C.a;
+  const px=W*0.36,py=56,sc=Math.min(190/Math.max(P.L,.1),200);
+  line(px-70,py,px+70,py,COL.ink,4);
+  line(px,py,px,py+Math.cos(a)*P.L*sc,COL.grid,1.5,[5,4]);
+  cx.save();cx.strokeStyle=COL.grid;cx.lineWidth=1.5;cx.setLineDash([5,4]);cx.beginPath();
+  cx.ellipse(px,py+Math.cos(a)*P.L*sc,Math.sin(a)*P.L*sc,Math.sin(a)*P.L*sc*0.28,0,0,7);
+  cx.stroke();cx.restore();
+  const by=py+Math.cos(a)*P.L*sc - Math.sin(a)*P.L*sc*0.28*Math.sin(ph);
+  const bx=px+Math.sin(a)*P.L*sc*Math.cos(ph);
+  line(px,py,bx,by,COL.ink,2);
+  const sc2=Math.min(64/Math.max(C.T,.5),70);
+  arrow(bx,by,bx,by+P.m*G*sc2,COL.red,2.8);
+  txt(bx+8,by+P.m*G*sc2+4,'mg',COL.red,12);
+  const ux=(px-bx),uy=(py-by),uL=Math.hypot(ux,uy);
+  arrow(bx,by,bx+ux/uL*C.T*sc2,by+uy/uL*C.T*sc2,COL.blue,2.8);
+  txt(bx+ux/uL*C.T*sc2-8,by+uy/uL*C.T*sc2-6,'T = '+f(C.T,1)+' N',COL.blue,11.5,'right');
+  dot(bx,by,9,COL.ink);
+  arc2(px,py,44,Math.PI/2-a,Math.PI/2,COL.ink,1.5);
+  txt(px+12,py+56,P.th+'°',COL.ink,12);
+  const qx=Math.min(W-206,W*0.62);
+  txt(qx,70,'Conical pendulum',COL.ink,14,'left',true);
+  txt(qx,96,'vertical:  T cos θ = mg',COL.mute,12.5);
+  txt(qx,116,'horizontal:  T sin θ = mv²/r',COL.mute,12.5);
+  txt(qx,140,'tan θ = v²/gr',COL.purple,13,'left',true);
+  txt(qx,170,'radius r = L sin θ = '+f(C.r,2)+' m',COL.ink,12.5);
+  txt(qx,192,'speed v = '+f(C.v,2)+' m/s',COL.ink,12.5);
+  txt(qx,214,'period = '+f(C.per,2)+' s',COL.ink,12.5);
+  txt(qx,244,'T is always larger than mg,',COL.mute,11.5);
+  txt(qx,261,'because only its vertical part',COL.mute,11.5);
+  txt(qx,278,'holds the weight up.',COL.mute,11.5);
+  S('ro1',f(C.v,2)+' m/s'); S('ro2',f(C.T,2)+' N'); S('ro3',f(C.r,2)+' m');
+  S('ro4',f(C.per,2)+' s'); S('ro5',f(C.T/(P.m*G),2)+'×'); S('ro6',f(C.v*C.v/(G*C.r),2));
+  S('n_th',String(P.th)); S('n_L',f(P.L,2)); S('n_m',f(P.m,2));
+  S('n_r',f(C.r,3)); S('n_T',f(C.T,2)); S('n_mg',f(P.m*G,2));
+  S('n_Tc',f(C.T*Math.cos(a),2)); S('n_Ts',f(C.T*Math.sin(a),2));
+  S('n_v',f(C.v,2)); S('n_per',f(C.per,2)); S('n_tan',f(Math.tan(a),3));
+  S('n_ratio',f(C.T/(P.m*G),2));
+  const pts=[[],[],[],[]];
+  for(let d=5;d<=80;d+=1){const t=d*Math.PI/180;
+    const rr=P.L*Math.sin(t);
+    pts[0].push([d,P.m*G/Math.cos(t)]);
+    pts[1].push([d,Math.sqrt(G*rr*Math.tan(t))]);
+    pts[2].push([d,2*Math.PI*Math.sqrt(P.L*Math.cos(t)/G)]);
+    pts[3].push([d,rr])}
+  return{pts,x:'cone half-angle θ / °',xmax:80,cur:P.th,
+         u:['tension T','speed v','period','radius r'],un:['N','m/s','s','m']}}
+
+function drawBank(){const B=bankState(), a=B.a;
+  const bx=W*0.30,by=H-82,ln=Math.min(W*0.30,210);
+  const ex=bx+ln*Math.cos(a), ey=by-ln*Math.sin(a);
+  fillPoly([[bx,by],[ex,ey],[ex,by]],COL.fill);
+  poly([[bx,by],[ex,ey]],COL.ink,4);
+  line(bx,by,ex+30,by,COL.grid,1.5,[5,4]);
+  arc2(bx,by,52,-a,0,COL.ink,1.5);txt(bx+60,by-12,P.th+'°',COL.ink,13,'left',true);
+  const cxp=bx+ln*0.56*Math.cos(a), cyp=by-ln*0.56*Math.sin(a);
+  cx.save();cx.translate(cxp,cyp);cx.rotate(-a);
+  rect(-26,-20,52,20,COL.fill2,COL.ink,0,4);
+  rect(-15,-31,30,12,COL.fill2,COL.ink,0,3);cx.restore();
+  const ox=cxp-Math.sin(a)*22, oy=cyp-Math.cos(a)*22;
+  const Nn=B.N, sc=62/Math.max(Nn,1);
+  arrow(ox,oy,ox,oy+P.m*G*sc,COL.red,2.8);txt(ox+7,oy+P.m*G*sc+6,'mg',COL.red,12);
+  arrow(ox,oy,ox+Math.sin(a)*Nn*sc,oy-Math.cos(a)*Nn*sc,COL.red,2.8);
+  txt(ox+Math.sin(a)*Nn*sc+7,oy-Math.cos(a)*Nn*sc,'N',COL.red,12);
+  arrow(ox,oy,ox+Math.sin(a)*Nn*sc,oy,COL.green,2.2,7);
+  txt(ox+Math.sin(a)*Nn*sc/2,oy+16,'N sin θ',COL.green,11,'center');
+  arrow(ox,oy,ox,oy-Math.cos(a)*Nn*sc,COL.green,2.2,7);
+  txt(ox-7,oy-Math.cos(a)*Nn*sc-5,'N cos θ',COL.green,11,'right');
+  arrow(bx-16,by-96,bx-74,by-96,COL.purple,2.4);
+  txt(bx-14,by-92,'to centre of the bend',COL.purple,11);
+  const qx=Math.min(W-212,W*0.60);
+  txt(qx,66,'Banked curve',COL.ink,14,'left',true);
+  txt(qx,92,'tan θ = v²/gr',COL.purple,13,'left',true);
+  txt(qx,122,'Design speed (no friction needed)',COL.mute,11.5);
+  txt(qx,142,f(B.vi,1)+' m/s  =  '+f(B.vi*3.6,0)+' km/h',COL.ink,14,'left',true);
+  txt(qx,176,'With μ = '+f(P.mu,2)+':',COL.mute,11.5);
+  txt(qx,198,'fastest  '+(isFinite(B.vmax)?f(B.vmax,1)+' m/s':'no limit'),COL.good,13);
+  txt(qx,220,'slowest  '+(B.vmin>0?f(B.vmin,1)+' m/s':'can crawl'),COL.blue,13);
+  txt(qx,252,'Too slow and the car slides',COL.mute,11.5);
+  txt(qx,269,'down the bank; too fast and',COL.mute,11.5);
+  txt(qx,286,'it slides up and off.',COL.mute,11.5);
+  S('ro1',f(B.vi,1)+' m/s'); S('ro2',f(Nn,1)+' N'); S('ro3',f(P.rb,0)+' m');
+  S('ro4',isFinite(B.vmax)?f(B.vmax,1)+' m/s':'∞'); S('ro5',f(B.vmin,1)+' m/s');
+  S('ro6',f(B.vi*3.6,0)+' km/h');
+  S('b_th',String(P.th)); S('b_r',f(P.rb,0)); S('b_mu',f(P.mu,2));
+  S('b_tan',f(Math.tan(a),3)); S('b_vi',f(B.vi,2)); S('b_kmh',f(B.vi*3.6,0));
+  S('b_N',f(Nn,2)); S('b_mg',f(P.m*G,2));
+  S('b_vmax',isFinite(B.vmax)?f(B.vmax,2):'∞'); S('b_vmin',f(B.vmin,2));
+  const pts=[[],[],[],[]];
+  for(let d=2;d<=70;d+=1){const q=bankState(d);
+    pts[0].push([d,q.vi]); pts[1].push([d,isFinite(q.vmax)?Math.min(q.vmax,120):120]);
+    pts[2].push([d,q.vmin]); pts[3].push([d,q.N/(P.m*G)])}
+  return{pts,x:'bank angle θ / °',xmax:70,cur:P.th,
+         u:['design speed','fastest with μ','slowest with μ','N / mg'],un:['m/s','m/s','m/s','']}}
+
+function draw(){cx.clearRect(0,0,W,H);
+  let g;
+  if(M==='loop')g=drawLoop();else if(M==='cone')g=drawCone();else g=drawBank();
+  const cols=[COL.blue,COL.red,COL.green,COL.purple];
+  const ser=[];
+  for(let i=0;i<4;i++){
+    const lb=$('g'+(i+1)+'L'); if(lb)lb.textContent=g.u[i];
+    if(isOn('g'+(i+1)))ser.push({col:cols[i],unit:g.un[i],pts:g.pts[i]})}
+  plotXY(ser,g.xmax,g.x,g.cur);
+}
+function vis(){const show={loop:['r','m','vt'],cone:['L','th','m'],bank:['th','rb','mu','m']}[M];
+  ['r','m','vt','L','th','rb','mu'].forEach(id=>{
+    const el=$(id);if(el)el.parentElement.style.display=show.indexOf(id)<0?'none':'block'});
+  const K={loop:['Speed at bottom','N at bottom','N at top','Min speed at top','N difference','6mg'],
+    cone:['Speed v','Tension T','Radius r','Period','T / mg','tanθ check'],
+    bank:['Design speed','Normal force','Radius','Max with μ','Min with μ','Design speed']};
+  K[M].forEach((k,i)=>{$('ro'+(i+1)).previousElementSibling.textContent=k});
+  ['loop','cone','bank'].forEach(k=>{const e=$('eq_'+k);
+    if(e)e.style.display=(k===M)?'grid':'none'})}
+bind('mode',e=>{M=e.value;ph=0;vis()});
+['r','m','vt','L','th','rb','mu'].forEach(id=>bind(id,e=>{P[id]=+e.value;
+  $(id+'V').textContent=(id==='mu')?(+e.value).toFixed(2):((id==='r'||id==='L')?(+e.value).toFixed(1):e.value)}));
+$('play').onclick=()=>setPlay(!playing);
+vis();
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>

@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Projectile Motion</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Projectile Motion</h1><p class="sub">A.1.6 — horizontal and vertical motion are independent, and only time connects them.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Launch speed<b><span id="uV">25</span> m/s</b></span><input type="range" id="u" min="5" max="60" step="1" value="25"></label><label class="ctl"><span class="lab">Launch angle<b><span id="thV">40</span> °</b></span><input type="range" id="th" min="0" max="90" step="1" value="40"></label><label class="ctl"><span class="lab">Launch height<b><span id="hV">0</span> m</b></span><input type="range" id="h" min="0" max="40" step="1" value="0"></label><div class="hr"></div><label class="chk"><input type="checkbox" id="drag"> Include air resistance</label><label class="ctl"><span class="lab">Drag constant k<b><span id="kV">0.01</span></b></span><input type="range" id="k" min="0.001" max="0.06" step="0.001" value="0.01"></label><div class="row"><button class="btn pri" id="play">Play</button><button class="btn" id="reset">Reset</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">Time of flight</div><div class="v" id="roT">—</div></div><div class="ro"><div class="k">Range</div><div class="v" id="roR">—</div></div><div class="ro"><div class="k">Max height</div><div class="v" id="roH">—</div></div><div class="ro"><div class="k">Impact speed</div><div class="v" id="roV">—</div></div><div class="ro"><div class="k">Impact angle</div><div class="v" id="roA">—</div></div><div class="ro"><div class="k">Range vs no drag</div><div class="v" id="roD">—</div></div></div>
+<p class="sec">Graphs <span>— the whole flight is plotted at once; the dashed line follows the animation</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="gy" checked><span class="sw" style="background:var(--purple)"></span><span class="lb" id="gyL">height y (m)</span></label><label class="chip"><input type="checkbox" id="gvx" checked><span class="sw" style="background:var(--green)"></span><span class="lb" id="gvxL">vx (m s⁻¹)</span></label><label class="chip"><input type="checkbox" id="gvy" checked><span class="sw" style="background:var(--blue)"></span><span class="lb" id="gvyL">vy (m s⁻¹)</span></label><label class="chip"><input type="checkbox" id="gsp"><span class="sw" style="background:var(--red)"></span><span class="lb" id="gspL">speed |v| (m s⁻¹)</span></label><label class="chip"><input type="checkbox" id="gke"><span class="sw" style="background:var(--orange)"></span><span class="lb" id="gkeL">½v² (J kg⁻¹)</span></label><label class="chip"><input type="checkbox" id="gte"><span class="sw" style="background:var(--ink)"></span><span class="lb" id="gteL">½v² + gy (J kg⁻¹)</span></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · Split the launch in two</h4><div class="fm"><div>u<sub>x</sub> = u cos θ = <span class="num" data-k="p_u">25</span> × cos <span class="num" data-k="p_th">40</span>° = <span class="num" data-k="p_ux"></span> m s⁻¹</div><div>u<sub>y</sub> = u sin θ = <span class="num" data-k="p_u"></span> × sin <span class="num" data-k="p_th"></span>° = <span class="num" data-k="p_uy"></span> m s⁻¹</div><div>a<sub>x</sub> = 0 &nbsp;&nbsp; a<sub>y</sub> = −9.81 m s⁻²</div></div><p class="why">This single step is the whole topic. Gravity pulls straight down, so it can change v<sub>y</sub> and nothing else — which means the horizontal and vertical motions never talk to each other. You then solve two easy one-dimensional problems instead of one hard two-dimensional one, and the only thing the two share is the clock.</p></div><div class="eq"><h4>2 · The vertical problem</h4><div class="fm"><div>at the top v<sub>y</sub> = 0, so t = u<sub>y</sub>/g = <span class="num" data-k="p_tap"></span> s</div><div>max height = h + u<sub>y</sub>²/2g = <span class="num" data-k="p_hmax"></span> m</div><div>landing: 0 = h + u<sub>y</sub>t − ½gt² → T = <span class="num" data-k="p_T"></span> s</div></div><p class="why">The apex is defined by v<sub>y</sub> = 0, not by v = 0 — the projectile is still moving at full horizontal speed up there. Launch from ground level and the flight is symmetrical, so T is exactly twice the time to the apex; launch from a height and that symmetry breaks, which is why the landing needs the quadratic.</p></div><div class="eq"><h4>3 · The horizontal problem</h4><div class="fm"><div>R = u<sub>x</sub> × T = <span class="num" data-k="p_ux"></span> × <span class="num" data-k="p_T"></span> = <span class="num" data-k="p_R"></span> m</div><div>from level ground: R = u² sin 2θ / g = <span class="num" data-k="p_R45"></span> m</div></div><p class="why">Horizontally there is no acceleration at all, so distance is just speed × time — and the time comes entirely from the vertical problem. The sin 2θ form explains two famous facts at once: the range peaks at 45° because sin 90° = 1, and complementary angles like 30° and 60° give identical ranges because sin 60° = sin 120°.</p></div><div class="eq"><h4>4 · Right now</h4><div class="fm"><div>t = <span class="num" data-k="p_t">0</span> s &nbsp; x = <span class="num" data-k="p_x">0</span> m &nbsp; y = <span class="num" data-k="p_y">0</span> m</div><div>v<sub>x</sub> = <span class="num" data-k="p_vx"></span> &nbsp; v<sub>y</sub> = <span class="num" data-k="p_vy"></span> &nbsp; |v| = <span class="num" data-k="p_sp"></span> m s⁻¹ at <span class="num" data-k="p_ang"></span>°</div><div>energy per kg: start <span class="num" data-k="p_e0"></span> → now <span class="num" data-k="p_e1"></span> J kg⁻¹</div><div><span id="p_dragnote">—</span></div></div><p class="why">Watch v<sub>x</sub> in the graph: a flat horizontal line until you switch drag on. The energy row is ½v² + gy, the kinetic and potential energy of each kilogram — without drag it is a constant, with drag it bleeds away into the air. That is the cleanest way to see what drag actually does.</p></div></div>
+<p class="note"><b>Try this:</b> set the height to 0 and sweep the angle — the range peaks at exactly 45°, and 30° gives the same range as 60°. Turn on the ½v² + gy trace and watch it sit perfectly flat: energy is conserved, it is only being traded between the kinetic and potential forms. Now switch on air resistance and that line sags, the peak drops, the descent gets steeper than the climb, and the best angle falls below 45°. The green arrows are the velocity components: v<sub>x</sub> never changes without drag, while v<sub>y</sub> passes through zero at the top.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const G=9.81;
+let P={u:25,th:40,h:0,k:0,drag:false},path=[],ghost=[],T=0,simT=0;
+function build(){
+  const u=P.u,a=P.th*Math.PI/180,ux=u*Math.cos(a),uy=u*Math.sin(a);
+  function integrate(k){const out=[];let x=0,y=P.h,vx=ux,vy=uy,t=0,dt=0.004;
+    out.push({t:0,x:0,y:P.h,vx:ux,vy:uy});
+    while(t<40){const sp=Math.hypot(vx,vy);
+      const ax=-k*sp*vx, ay=-G-k*sp*vy;
+      vx+=ax*dt;vy+=ay*dt;x+=vx*dt;y+=vy*dt;t+=dt;
+      if(y<=0){const pr=out[out.length-1];const fr=pr.y/(pr.y-y||1e-9);
+        out.push({t:pr.t+dt*fr,x:pr.x+(x-pr.x)*fr,y:0,vx:vx,vy:vy});break}
+      out.push({t:t,x:x,y:y,vx:vx,vy:vy})}
+    return out}
+  ghost=integrate(0);
+  path=P.drag?integrate(P.k):ghost;
+  T=path[path.length-1].t;
+  const e=path[path.length-1];
+  let hmax=0;for(const p of path)if(p.y>hmax)hmax=p.y;
+  S('roT',f(T,2)+' s'); S('roR',f(e.x,1)+' m'); S('roH',f(hmax,1)+' m');
+  S('roV',f(Math.hypot(e.vx,e.vy),1)+' m/s');
+  S('roA',f(Math.abs(Math.atan2(e.vy,e.vx)*180/Math.PI),0)+'°');
+  const g=ghost[ghost.length-1];
+  S('roD',P.drag?('−'+f(100*(1-e.x/g.x),0)+'%'):'0%');
+}
+function at(tt){if(tt>=T)return path[path.length-1];
+  const i=Math.min(path.length-1,Math.max(1,Math.round(tt/0.004)));return path[i]}
+function step(dt){simT+=dt*0.9;if(simT>=T){simT=T;setPlay(false)}}
+function draw(){cx.clearRect(0,0,W,H);
+  const m={l:42,r:22,t:22,b:36};
+  let xm=0,ym=0;for(const p of ghost){if(p.x>xm)xm=p.x;if(p.y>ym)ym=p.y}
+  for(const p of path){if(p.x>xm)xm=p.x;if(p.y>ym)ym=p.y}
+  xm=Math.max(xm,10);ym=Math.max(ym,xm*0.22,4);
+  const sx=(W-m.l-m.r)/xm, sy=(H-m.t-m.b)/ym, s=Math.min(sx,sy);
+  const X=v=>m.l+v*s, Y=v=>H-m.b-v*s;
+  const gs=Math.pow(10,Math.floor(Math.log10(xm/4)));
+  let gstep=gs;if(xm/gs>8)gstep=gs*2;if(xm/gs>18)gstep=gs*5;
+  for(let v=0;v<=xm*1.02;v+=gstep){line(X(v),m.t,X(v),H-m.b,COL.grid,1);
+    txt(X(v),H-m.b+16,String(Math.round(v*100)/100),COL.mute,10.5,'center')}
+  for(let v=0;v<=ym*1.02;v+=gstep){if(Y(v)<m.t)break;line(m.l,Y(v),W-m.r,Y(v),COL.grid,1);
+    txt(m.l-7,Y(v)+4,String(Math.round(v*100)/100),COL.mute,10.5,'right')}
+  line(m.l,H-m.b,W-m.r,H-m.b,COL.ink,2);
+  txt(W-m.r,H-m.b+30,'horizontal distance / m',COL.mute,11,'right');
+  cx.save();cx.translate(13,m.t+10);cx.rotate(-Math.PI/2);
+  txt(0,0,'height / m',COL.mute,11,'right');cx.restore();
+  if(P.drag){poly(ghost.map(p=>[X(p.x),Y(p.y)]),COL.mute,1.6,[6,5]);
+    const g=ghost[ghost.length-1];txt(X(g.x),Y(0)-8,'no drag',COL.mute,11,'right')}
+  const cur=at(simT);
+  const upto=[];for(const p of path){if(p.t>simT)break;upto.push([X(p.x),Y(p.y)])}
+  poly(path.map(p=>[X(p.x),Y(p.y)]),COL.line,2.5);
+  poly(upto,COL.red,3);
+  let ap=path[0];for(const p of path)if(p.y>ap.y)ap=p;
+  line(X(ap.x),Y(ap.y),X(ap.x),Y(0),COL.grid,1,[4,4]);
+  dot(X(ap.x),Y(ap.y),3.5,COL.mute);
+  const bx=X(cur.x),by=Y(cur.y);
+  const vs=Math.min(2.2,70/Math.max(8,P.u));
+  arrow(bx,by,bx+cur.vx*vs,by,COL.green,2.5);
+  arrow(bx,by,bx,by-cur.vy*vs,COL.green,2.5);
+  arrow(bx,by,bx+cur.vx*vs,by-cur.vy*vs,COL.blue,3);
+  dot(bx,by,7,COL.red);
+  txt(bx+cur.vx*vs+6,by+4,'vx',COL.green,11);
+  txt(bx+4,by-cur.vy*vs-5,'vy',COL.green,11);
+  if(simT<0.01){const a=P.th*Math.PI/180;
+    arc2(X(0),Y(P.h),30,-a,0,COL.ink,1.5);
+    txt(X(0)+36,Y(P.h)-7,P.th+'°',COL.ink,12)}
+  // ---- live equations
+  const a=P.th*Math.PI/180, ux=P.u*Math.cos(a), uy=P.u*Math.sin(a);
+  const tap=uy/G, hmax0=P.h+uy*uy/(2*G);
+  const Tn=(uy+Math.sqrt(uy*uy+2*G*P.h))/G, Rn=ux*Tn;
+  const sp=Math.hypot(cur.vx,cur.vy);
+  S('p_u',f(P.u,1)); S('p_th',String(P.th)); S('p_h',f(P.h,1));
+  S('p_ux',f(ux,2)); S('p_uy',f(uy,2));
+  S('p_tap',f(tap,2)); S('p_hmax',f(hmax0,2));
+  S('p_T',f(Tn,2)); S('p_R',f(Rn,1));
+  S('p_R45',f(P.u*P.u*Math.sin(2*a)/G,1));
+  S('p_t',f(simT,2)); S('p_x',f(cur.x,2)); S('p_y',f(cur.y,2));
+  S('p_vx',f(cur.vx,2)); S('p_vy',f(cur.vy,2)); S('p_sp',f(sp,2));
+  S('p_ang',f(Math.atan2(cur.vy,cur.vx)*180/Math.PI,1));
+  S('p_e0',f(0.5*P.u*P.u+G*P.h,1)); S('p_e1',f(0.5*sp*sp+G*cur.y,1));
+  const dv=$('p_dragnote');
+  if(dv)dv.innerHTML=P.drag
+    ? '<b class="bd">drag is on</b> — the equations above are the no-drag answers, and the curve '
+      +'no longer matches them'
+    : '<b class="gd">drag is off</b> — the equations above are exact';
+  // ---- graph
+  const want=[['gy','y','m',COL.purple,p=>p.y],['gvx','vx','m/s',COL.green,p=>p.vx],
+              ['gvy','vy','m/s',COL.blue,p=>p.vy],['gsp','|v|','m/s',COL.red,p=>Math.hypot(p.vx,p.vy)],
+              ['gke','½v²','J/kg',COL.orange,p=>0.5*(p.vx*p.vx+p.vy*p.vy)],
+              ['gte','½v²+gy','J/kg',COL.ink,p=>0.5*(p.vx*p.vx+p.vy*p.vy)+G*p.y]];
+  const ser=[];
+  for(const q of want) if(isOn(q[0]))
+    ser.push({col:q[3],unit:q[2],pts:path.filter((p,i)=>i%3===0||p.t>=T).map(p=>[p.t,q[4](p)])});
+  plotXY(ser,T,'time / s',simT);
+}
+['u','th','h','k'].forEach(id=>bind(id,e=>{P[id]=+e.value;
+  $(id+'V').textContent=id==='k'?(+e.value).toFixed(2):e.value;
+  build();if(simT>T)simT=T}));
+bind('drag',e=>{P.drag=e.checked;build();if(simT>T)simT=T});
+$('play').onclick=()=>{if(simT>=T)simT=0;setPlay(!playing)};
+$('reset').onclick=()=>{simT=0;setPlay(false)};
+build();
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>
