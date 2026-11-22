@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Springs, Hooke's Law and Elastic Energy</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Springs, Hooke's Law and Elastic Energy</h1><p class="sub">A.3 — the force grows as you stretch, so the energy stored is the area under the graph.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Spring constant k<b><span id="kV">40</span> N/m</b></span><input type="range" id="k" min="5" max="200" step="5" value="40"></label><label class="ctl"><span class="lab">Mass<b><span id="mV">1.5</span> kg</b></span><input type="range" id="m" min="0.2" max="6" step="0.1" value="1.5"></label><label class="ctl"><span class="lab">Pull back to<b><span id="AV">0.3</span> m</b></span><input type="range" id="A" min="0.05" max="0.5" step="0.01" value="0.3"></label><label class="ctl"><span class="lab">Damping<b><span id="bV">0</span></b></span><input type="range" id="b" min="0" max="6" step="0.2" value="0"></label><div class="row"><button class="btn pri" id="play">Play</button><button class="btn" id="reset">Reset</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">Force now</div><div class="v" id="ro1">—</div></div><div class="ro"><div class="k">Elastic PE</div><div class="v" id="ro2">—</div></div><div class="ro"><div class="k">Kinetic</div><div class="v" id="ro3">—</div></div><div class="ro"><div class="k">Total</div><div class="v" id="ro4">—</div></div><div class="ro"><div class="k">Period</div><div class="v" id="ro5">—</div></div><div class="ro"><div class="k">Max speed</div><div class="v" id="ro6">—</div></div></div>
+<p class="sec">Graphs <span>— energy against time — the two stores are exactly out of phase</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="gk" checked><span class="sw" style="background:var(--red)"></span><span class="lb" id="gkL">kinetic (J)</span></label><label class="chip"><input type="checkbox" id="ge" checked><span class="sw" style="background:var(--blue)"></span><span class="lb" id="geL">elastic (J)</span></label><label class="chip"><input type="checkbox" id="gt" checked><span class="sw" style="background:var(--green)"></span><span class="lb" id="gtL">total (J)</span></label><label class="chip"><input type="checkbox" id="gf"><span class="sw" style="background:var(--orange)"></span><span class="lb" id="gfL">force (N)</span></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · Hooke's law</h4><div class="fm"><div>F = kx, with k the spring constant in N m⁻¹</div><div>k = <span class="num" data-k="s_k"></span> N m⁻¹, pulled to x = <span class="num" data-k="s_A"></span> m</div><div>so F = <span class="num" data-k="s_F"></span> N at full stretch</div></div><p class="why">The force is not constant — it grows in proportion to how far you have already stretched the spring. That single fact is why the energy stored is <i>not</i> simply Fx, and why a graph is the safest way to think about it.</p></div><div class="eq"><h4>2 · Why the energy has a ½ in it</h4><div class="fm"><div>W = area under the F–x graph</div><div>the graph is a straight line from the origin, so the area is a triangle</div><div>E<sub>e</sub> = ½ × base × height = ½xF = ½kx²</div><div>= <span class="num" data-k="s_E"></span> J at full stretch</div></div><p class="why">Average force is what the ½ really represents: the force climbed evenly from 0 to kx, so on average it was ½kx. Multiply that by the distance x and you get ½kx². Exactly the same reasoning gives the ½ in ½mv² and in s = ½at².</p></div><div class="eq"><h4>3 · Trading energy back and forth</h4><div class="fm"><div>total = ½kx² + ½mv² = constant</div><div>now: elastic <span class="num" data-k="s_now"></span> J + kinetic <span class="num" data-k="s_ke"></span> J</div><div>all elastic at the ends, all kinetic at the middle</div><div>v<sub>max</sub> = A√(k/m) = <span class="num" data-k="s_vmax"></span> m s⁻¹</div></div><p class="why">At maximum extension the block is momentarily stationary, so every joule is elastic. Passing through the natural length the spring is unstretched, so every joule is kinetic. Setting those two equal — ½kA² = ½mv²<sub>max</sub> — is the quickest route to the maximum speed.</p></div><div class="eq"><h4>4 · The period</h4><div class="fm"><div>T = 2π√(m/k) = 2π√(<span class="num" data-k="s_m"></span>/<span class="num" data-k="s_k"></span>) = <span class="num" data-k="s_T"></span> s</div></div><p class="why">Notice the amplitude is nowhere in the formula. Pull the block twice as far and it travels twice as far but moves twice as fast, and the two effects cancel exactly. That independence is what makes oscillators useful as clocks.</p></div></div>
+<p class="note"><b>Try this:</b> watch the shaded triangle on the F–x graph as the block moves — its area is the elastic energy, and it is a triangle rather than a rectangle precisely because the force grows from zero. The red and blue bars swap completely twice per cycle while the green total stays put. Now change the amplitude and check the period readout: it does not move, because T = 2π√(m/k) contains no A. Add damping and the total bar finally starts to fall.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const SLOW=0.65;
+let P={k:40,m:1.5,A:0.30,b:0.0}, x=0.30, v=0, tm=0, hist=[];
+function EPE(){return 0.5*P.k*x*x}
+function KEn(){return 0.5*P.m*v*v}
+function reset(){x=P.A;v=0;tm=0;hist=[];rec();setPlay(false)}
+function rec(){hist.push([tm,KEn(),EPE(),KEn()+EPE(),P.k*x]);
+  if(hist.length>1800)hist.shift()}
+function step(dt){dt*=SLOW;const K=8,hh=dt/K;
+  for(let i=0;i<K;i++){const a=(-P.k*x-P.b*v)/P.m; v+=a*hh; x+=v*hh}
+  tm+=dt; rec()}
+function draw(){cx.clearRect(0,0,W,H);
+  const wy=H*0.26, wallx=34;
+  const gw=Math.min(W*0.33,220), gx0=W-gw-24;
+  const span=Math.max(60,gx0-wallx-150);
+  const sc=Math.max(40,Math.min(span/(2*Math.max(P.A,0.05)),460));
+  const eqx=wallx+100+P.A*sc, px=eqx+x*sc;
+  const bs=Math.max(24,Math.min(44,18+P.m*5));
+  line(wallx,wy-50,wallx,wy+50,COL.ink,4);
+  line(wallx,wy+40,Math.max(px+60,eqx+P.A*sc+60),wy+40,COL.ink,2.5);
+  const nc=10, L=Math.max(px-bs/2-wallx,14);
+  const pts=[[wallx,wy]];
+  for(let i=0;i<=nc*2;i++)pts.push([wallx+7+(L-7)*i/(nc*2), wy+(i%2?-15:15)]);
+  pts.push([px-bs/2,wy]);
+  poly(pts,COL.blue,2.2);
+  rect(px-bs/2,wy-bs/2,bs,bs,COL.fill2,COL.ink,4);
+  line(eqx,wy-62,eqx,wy+48,COL.grid,1.2,[5,4]);
+  txt(eqx,wy-68,'natural length',COL.mute,10.5,'center');
+  const Fs=P.k*x, fsc=Math.min(72/Math.max(P.k*P.A,1),60);
+  if(Math.abs(Fs)>0.3){const tip=px-Math.sign(x)*Math.min(Math.abs(Fs)*fsc,80);
+    arrow(px,wy-bs/2-16,tip,wy-bs/2-16,COL.red,2.6);
+    txt(px,wy-bs/2-26,'F = kx = '+f(Math.abs(Fs),1)+' N',COL.red,11.5,'center')}
+  if(Math.abs(v)>0.05){arrow(px,wy+62,px+Math.max(-66,Math.min(66,v*30)),wy+62,COL.blue,2.4);
+    txt(px,wy+80,'v = '+f(Math.abs(v),2)+' m/s',COL.blue,11,'center')}
+  // F-x inset, vertically centred
+  const gcy=H*0.50, gh=H*0.30;
+  const Xm=P.A*1.06, Ym=P.k*P.A*1.06;
+  const GX=u=>gx0+gw*0.5+(u/Xm)*gw*0.5, GY=u=>gcy-(u/Ym)*gh;
+  line(gx0,gcy,gx0+gw,gcy,COL.line,1.5);
+  line(gx0+gw*0.5,gcy+gh+12,gx0+gw*0.5,gcy-gh-12,COL.line,1.5);
+  line(GX(-Xm),GY(-Ym),GX(Xm),GY(Ym),COL.blue,2.6);
+  if(Math.abs(x)>0.005){
+    fillPoly([[GX(0),GY(0)],[GX(x),GY(0)],[GX(x),GY(P.k*x)]],COL.fill);
+    line(GX(x),GY(0),GX(x),GY(P.k*x),COL.grid,1.2,[4,3]);
+    dot(GX(x),GY(P.k*x),3.6,COL.blue)}
+  txt(gx0+gw,gcy+16,'extension x',COL.mute,10.5,'end');
+  txt(gx0+gw*0.5+7,gcy-gh-18,'F / N',COL.mute,10.5);
+  txt(gx0+4,gcy-gh*0.80,'area = ½kx²',COL.blue,10.5,'left',true);
+  txt(gx0+4,gcy-gh*0.80+14,'= elastic PE',COL.mute,10,'left');
+  // bars
+  const base=H-40, Hm=H*0.26, bw=40, bx=34;
+  const TOT=Math.max(KEn()+EPE(),1e-6);
+  line(bx-10,base-Hm,bx+2*56+bw+10,base-Hm,COL.green,1.4,[5,4]);
+  txt(bx-10,base+34,'total = '+f(TOT,2)+' J',COL.green,11,'left',true);
+  [['KE',KEn(),COL.red],['elastic',EPE(),COL.blue],['total',TOT,COL.green]].forEach((it,i)=>{
+    const xx=bx+i*56, hgt=Math.max(0,Math.min(it[1]/TOT,1)*Hm);
+    rect(xx,base-hgt,bw,hgt,it[2],'',0);
+    txt(xx+bw/2,base-hgt-7,f(it[1],2),it[2],10.5,'center',true);
+    txt(xx+bw/2,base+16,it[0],COL.ink,11,'center');
+    line(xx,base,xx+bw,base,COL.line,1.4)});
+  const T=2*Math.PI*Math.sqrt(P.m/P.k);
+  S('ro1',f(P.k*x,2)+' N'); S('ro2',f(EPE(),3)+' J'); S('ro3',f(KEn(),3)+' J');
+  S('ro4',f(KEn()+EPE(),3)+' J'); S('ro5',f(T,2)+' s');
+  S('ro6',f(P.A*Math.sqrt(P.k/P.m),2)+' m/s');
+  S('s_k',f(P.k,0)); S('s_A',f(P.A,2)); S('s_x',f(x,3));
+  S('s_F',f(P.k*P.A,1)); S('s_E',f(0.5*P.k*P.A*P.A,3));
+  S('s_m',f(P.m,1)); S('s_T',f(T,2)); S('s_vmax',f(P.A*Math.sqrt(P.k/P.m),2));
+  S('s_now',f(EPE(),3)); S('s_ke',f(KEn(),3));
+  const want=[['gk',1,'J',COL.red],['ge',2,'J',COL.blue],['gt',3,'J',COL.green],['gf',4,'N',COL.orange]];
+  const ser=[];
+  for(const q of want) if(isOn(q[0])) ser.push({col:q[3],unit:q[2],pts:hist.map(z=>[z[0],z[q[1]]])});
+  plotXY(ser,Math.max(tm,1.5),'time / s');
+}
+['k','m','A','b'].forEach(id=>bind(id,el=>{P[id]=+el.value;
+  $(id+'V').textContent=(id==='A')?(+el.value).toFixed(2):((id==='b')?(+el.value).toFixed(1):(+el.value).toFixed(1));
+  if(!playing)reset()}));
+$('play').onclick=()=>setPlay(!playing);
+$('reset').onclick=reset;
+reset();
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Energy Conservation — Drop and Bounce</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Energy Conservation — Drop and Bounce</h1><p class="sub">A.3 — kinetic and potential energy trade places, and nothing is ever lost, only moved.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Release height<b><span id="hV">5</span> m</b></span><input type="range" id="h" min="1" max="12" step="0.5" value="5"></label><label class="ctl"><span class="lab">Mass<b><span id="mV">2</span> kg</b></span><input type="range" id="m" min="0.5" max="8" step="0.5" value="2"></label><label class="ctl"><span class="lab">Restitution e<b><span id="eV">0.85</span></b></span><input type="range" id="e" min="0" max="1" step="0.05" value="0.85"></label><label class="ctl"><span class="lab">Air drag constant<b><span id="cdV">0</span></b></span><input type="range" id="cd" min="0" max="0.3" step="0.005" value="0"></label><div class="row"><button class="btn pri" id="play">Play</button><button class="btn" id="reset">Reset</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">Kinetic</div><div class="v" id="ro1">—</div></div><div class="ro"><div class="k">Potential</div><div class="v" id="ro2">—</div></div><div class="ro"><div class="k">Thermal</div><div class="v" id="ro3">—</div></div><div class="ro"><div class="k">Total</div><div class="v" id="ro4">—</div></div><div class="ro"><div class="k">Speed now</div><div class="v" id="ro5">—</div></div><div class="ro"><div class="k">Impact speed √(2gh)</div><div class="v" id="ro6">—</div></div></div>
+<p class="sec">Graphs <span>— the green line is flat no matter what you change — that is the law</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="gk" checked><span class="sw" style="background:var(--red)"></span><span class="lb" id="gkL">kinetic (J)</span></label><label class="chip"><input type="checkbox" id="gp" checked><span class="sw" style="background:var(--blue)"></span><span class="lb" id="gpL">potential (J)</span></label><label class="chip"><input type="checkbox" id="gl" checked><span class="sw" style="background:var(--mute)"></span><span class="lb" id="glL">thermal (J)</span></label><label class="chip"><input type="checkbox" id="gt" checked><span class="sw" style="background:var(--green)"></span><span class="lb" id="gtL">total (J)</span></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · The two mechanical stores</h4><div class="fm"><div>E<sub>k</sub> = ½mv²  — energy of motion</div><div>ΔE<sub>p</sub> = mgΔh  — energy of position in a gravity field</div><div>at release: E = mgh = <span class="num" data-k="q_m"></span> × 9.81 × <span class="num" data-k="q_h"></span> = <span class="num" data-k="q_E0"></span> J</div></div><p class="why">Potential energy is always a <i>change</i>, measured from wherever you choose to call zero. That choice is free — only differences ever matter — so pick the lowest point in the problem and save yourself the arithmetic.</p></div><div class="eq"><h4>2 · Conservation, and why mass cancels</h4><div class="fm"><div>mgh = ½mv²  →  v = √(2gh) = <span class="num" data-k="q_v"></span> m s⁻¹</div><div>now: KE <span class="num" data-k="q_ke"></span> + PE <span class="num" data-k="q_pe"></span> + thermal <span class="num" data-k="q_lost"></span> = <span class="num" data-k="q_tot"></span> J</div></div><p class="why">The m on both sides cancels, so the landing speed of a dropped object does not depend on its mass at all — the same result as free fall in A.1.5, arrived at from energy instead of SUVAT. Whichever route you take must give the same answer, which is a useful way to check yourself.</p></div><div class="eq"><h4>3 · Where the energy goes</h4><div class="fm"><div>lost per bounce = (1 − e²) × the kinetic energy arriving</div><div>with e = <span class="num" data-k="q_e"></span> that is <span class="num" data-k="q_frac"></span>% each time</div><div>so the rebound height is e²h = <span class="num" data-k="q_eh"></span> m</div></div><p class="why">The coefficient of restitution e is a <i>speed</i> ratio, but kinetic energy goes as v², so the energy ratio is e². That square is why a ball with e = 0.9 — which sounds almost perfect — still loses nearly a fifth of its energy on every single bounce.</p></div><div class="eq"><h4>4 · The green bar is the whole point</h4><div class="fm"><div>KE + PE + thermal = constant, always</div></div><p class="why">Energy is never destroyed, only moved. Switch the restitution to 1 and the drag to 0 and the green bar is frozen while the red and blue ones trade places. Add losses and the green bar <i>still</i> does not move — the energy has simply moved into the grey thermal column instead of leaving the universe.</p></div></div>
+<p class="note"><b>Try this:</b> set e = 1 and drag = 0 first. The green total bar freezes while red and blue trade places perfectly — that is conservation of energy with nothing else going on. Now drop e to 0.85: the total bar <i>still</i> does not move, because the lost energy appears in the grey thermal column rather than vanishing. Watch the rebound height fall as e², so 0.85 gives back only 72% of the height. Finally add air drag and the graph's red and blue curves stop reaching the same peaks at all.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const G=9.81, SLOW=0.6;
+let P={h:5,m:2,e:0.85,cd:0.00}, y=5, v=0, tm=0, lost=0, hist=[], bounces=0;
+const R=0.18;
+function drag(vv){return P.cd*Math.abs(vv)*vv}
+function KE(){return 0.5*P.m*v*v}
+function PE(){return P.m*G*Math.max(y-R,0)}
+function E0(){return P.m*G*Math.max(P.h-R,0)}
+function reset(){y=P.h;v=0;tm=0;lost=0;bounces=0;hist=[];rec(0);setPlay(false)}
+function rec(){hist.push([tm,KE(),PE(),lost,KE()+PE()+lost]);
+  if(hist.length>1800)hist.shift()}
+function step(dt){dt*=SLOW;const K=6,hh=dt/K;
+  for(let i=0;i<K;i++){
+    const a=-G-drag(v)/P.m;
+    const vn=v+a*hh;
+    lost+=Math.abs(drag((v+vn)/2))*Math.abs((v+vn)/2)*hh;
+    v=vn; y+=v*hh;
+    if(y<=R){y=R;
+      if(v<-0.05){const before=0.5*P.m*v*v;
+        v=-P.e*v; lost+=before-0.5*P.m*v*v; bounces++}
+      else {v=0}}
+  }
+  tm+=dt; rec();
+  if(Math.abs(v)<0.06&&y<=R+0.01){setPlay(false)}}
+function draw(){cx.clearRect(0,0,W,H);
+  const top=24, bot=H-46, top_h=Math.max(P.h,1)*1.08;
+  const Y=u=>bot-(u/top_h)*(bot-top);
+  const bx=66;
+  line(bx-32,bot,bx+32,bot,COL.ink,3);
+  const stp=top_h>8?2:1;
+  for(let u=0;u<=top_h;u+=stp){
+    line(bx-36,Y(u),bx-30,Y(u),COL.grid,1.5);
+    txt(bx-40,Y(u)+4,f(u,0),COL.mute,10,'right')}
+  txt(bx-40,Y(0)+20,'m',COL.mute,10,'right');
+  line(bx-36,Y(P.h),bx+36,Y(P.h),COL.grid,1,[5,4]);
+  txt(bx+40,Y(P.h)+4,'release',COL.mute,10.5);
+  const rr=Math.max(8,Math.min(17,6+P.m*2.4));
+  dot(bx,Y(y),rr,COL.orange); ring(bx,Y(y),rr,COL.ink,2);
+  if(Math.abs(v)>0.1){const dv=Math.max(-50,Math.min(50,-v*4.4));
+    arrow(bx+rr+8,Y(y),bx+rr+8,Y(y)-dv,COL.blue,2.2);
+    txt(bx+rr+15,Y(y)+4,f(Math.abs(v),1),COL.blue,10.5)}
+  // bars
+  const bx0=Math.max(132,W*0.30), avail=W-bx0-16;
+  const bw=Math.max(26,Math.min(64,avail/5.2)), gap=avail/4;
+  const base=H-50, Hm=H-150;
+  const TOT=Math.max(KE()+PE()+lost,1e-6);
+  const items=[['kinetic',KE(),COL.red],['potential',PE(),COL.blue],
+               ['thermal',lost,COL.mute],['total',TOT,COL.green]];
+  line(bx0-8,base-Hm,bx0+3*gap+bw+8,base-Hm,COL.green,1.4,[5,4]);
+  txt(bx0-8,base+36,'total = '+f(TOT,1)+' J — green always reaches the line',
+      COL.green,10.5,'left',true);
+  items.forEach((it,i)=>{const x=bx0+i*gap;
+    const hgt=Math.max(0,Math.min(it[1]/TOT,1)*Hm);
+    rect(x,base-hgt,bw,hgt,it[2],'',0);
+    txt(x+bw/2,base-hgt-8,f(it[1],1),it[2],11,'center',true);
+    txt(x+bw/2,base+17,it[0],COL.ink,10.5,'center');
+    line(x,base,x+bw,base,COL.line,1.5)});
+  rect(12,10,Math.min(300,W-24),24,COL.panel,(P.e>0.995&&P.cd<1e-6)?COL.good:COL.orange,8);
+  txt(22,26,(P.e>0.995&&P.cd<1e-6)?'NO ENERGY LOST — the green bar never moves'
+      :(bounces?('ENERGY LEAKING AWAY — '+bounces+' bounce'+(bounces===1?'':'s'))
+                :('ENERGY WILL LEAK AT EACH BOUNCE — e = '+f(P.e,2))),
+      (P.e>0.995&&P.cd<1e-6)?COL.good:COL.orange,12,'left',true);
+  S('ro1',f(KE(),1)+' J'); S('ro2',f(PE(),1)+' J'); S('ro3',f(lost,1)+' J');
+  S('ro4',f(KE()+PE()+lost,1)+' J'); S('ro5',f(Math.abs(v),2)+' m/s');
+  S('ro6',f(Math.sqrt(2*G*Math.max(P.h-R,0)),2)+' m/s');
+  S('q_m',f(P.m,1)); S('q_h',f(P.h,1)); S('q_E0',f(E0(),1));
+  S('q_v',f(Math.sqrt(2*G*Math.max(P.h-R,0)),2));
+  S('q_ke',f(KE(),1)); S('q_pe',f(PE(),1)); S('q_lost',f(lost,1));
+  S('q_tot',f(KE()+PE()+lost,1)); S('q_e',f(P.e,2));
+  S('q_eh',f(P.h*P.e*P.e,2)); S('q_frac',f(100*(1-P.e*P.e),0));
+  const want=[['gk',1,'J',COL.red],['gp',2,'J',COL.blue],
+              ['gl',3,'J',COL.mute],['gt',4,'J',COL.green]];
+  const ser=[];
+  for(const q of want) if(isOn(q[0])) ser.push({col:q[3],unit:q[2],pts:hist.map(z=>[z[0],z[q[1]]])});
+  plotXY(ser,Math.max(tm,1.5),'time / s');
+}
+['h','m','e','cd'].forEach(id=>bind(id,el=>{P[id]=+el.value;
+  $(id+'V').textContent=(id==='e')?(+el.value).toFixed(2):((id==='cd')?(+el.value).toFixed(3):(+el.value).toFixed(1));
+  if(!playing)reset()}));
+$('play').onclick=()=>{if(Math.abs(v)<0.06&&y<=R+0.01)reset();setPlay(!playing)};
+$('reset').onclick=reset;
+reset();
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>

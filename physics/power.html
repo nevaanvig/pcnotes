@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Power and Efficiency</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#fbfaf8;--panel:#ffffff;--ink:#1c1b19;--mute:#6f6c66;--line:#e4e1db;
+ --red:#c0392b;--blue:#2471a3;--green:#1e8449;--orange:#cf8b17;--purple:#6c3483;
+ --accent:#2471a3;--grid:#e9e6e0;--fill:#dceaf6;--fill2:#fbeccf;--good:#1e8449;--bad:#c0392b;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}}
+:root[data-theme="dark"]{
+ --bg:#141519;--panel:#1c1e23;--ink:#eceae6;--mute:#9b9890;--line:#2d3038;
+ --red:#e8705f;--blue:#6ab0e0;--green:#5bc48a;--orange:#edb04e;--purple:#b48ad6;
+ --accent:#6ab0e0;--grid:#262930;--fill:#1b3042;--fill2:#3a2f18;--good:#5bc48a;--bad:#e8705f;
+}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+ font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+ padding:16px 14px 30px;max-width:1080px;margin:0 auto;-webkit-text-size-adjust:100%}
+header{margin:0 0 13px;position:relative;padding-right:120px}
+.pop{position:absolute;top:2px;right:0;font-size:11.5px;color:var(--mute);
+ text-decoration:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;
+ white-space:nowrap;background:var(--panel)}
+.pop:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){header{padding-right:0}.pop{position:static;display:inline-block;margin-top:7px}}
+h1{font-size:21px;margin:0 0 3px;letter-spacing:-.01em}
+.sub{margin:0;color:var(--mute);font-size:13.5px}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 234px;gap:13px;align-items:start}
+@media (max-width:660px){.wrap{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:410px;touch-action:none}
+@media (max-width:660px){canvas{height:320px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;
+ display:flex;flex-direction:column;gap:13px}
+.ctl{display:block}
+.ctl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+ font-size:12.5px;color:var(--mute);margin-bottom:5px}
+.ctl .lab b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0;height:20px}
+select{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:84px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);
+ background:var(--bg);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.hr{height:1px;background:var(--line);margin:1px 0}
+.hint{margin:2px 0 0;font-size:11.5px;color:var(--mute);line-height:1.45;
+ padding-top:11px;border-top:1px solid var(--line)}
+.cap{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ros{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-top:14px}
+.ro{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.ro .k{font-size:11px;color:var(--mute);margin-bottom:2px}
+.ro .v{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.note{margin:16px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);
+ border-left:3px solid var(--accent);border-radius:8px;font-size:13.5px;color:var(--mute)}
+.note b{color:var(--ink)}
+table.tb{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+table.tb th,table.tb td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line)}
+table.tb th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+table.tb td{font-variant-numeric:tabular-nums}
+.sec{margin:26px 0 10px;font-size:13px;font-weight:650;letter-spacing:.02em}
+.sec span{color:var(--mute);font-weight:400}
+.gstage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas#g{height:240px}
+@media (max-width:660px){canvas#g{height:205px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;
+ border:1px solid var(--line);border-radius:999px;cursor:pointer;user-select:none;
+ background:var(--panel)}
+.chip:hover{border-color:var(--accent)}
+.chip input{accent-color:var(--accent);width:13px;height:13px;margin:0}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.eqwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(296px,1fr));gap:12px}
+.eq{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.eq h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+ color:var(--mute);font-weight:650}
+.eq .fm{font-size:14px;line-height:1.95;font-variant-numeric:tabular-nums}
+.eq .fm div{white-space:normal}
+.num{color:var(--accent);font-weight:650}
+.gd{color:var(--good);font-weight:650}
+.bd{color:var(--bad);font-weight:650}
+.eq .why{margin:9px 0 0;padding-top:9px;border-top:1px solid var(--line);
+ font-size:12.5px;color:var(--mute);line-height:1.55}
+</style></head>
+<body>
+<header><h1>Power and Efficiency</h1><p class="sub">A.3 — power is the rate of doing work, and P = Fv is the form you will actually use.</p>
+<a class="pop" id="pop" href="#" target="_blank" rel="noopener">open in a new tab &#8599;</a></header>
+<div class="wrap">
+  <div class="stage"><canvas id="c"></canvas></div>
+  <div class="panel"><label class="ctl"><span class="lab">Speed<b><span id="vV">20</span> m/s</b></span><input type="range" id="v" min="2" max="40" step="1" value="20"></label><label class="ctl"><span class="lab">Mass<b><span id="mV">1200</span> kg</b></span><input type="range" id="m" min="200" max="3000" step="100" value="1200"></label><label class="ctl"><span class="lab">Incline angle<b><span id="thV">0</span> °</b></span><input type="range" id="th" min="0" max="15" step="1" value="0"></label><label class="ctl"><span class="lab">Drag constant c<b><span id="cdV">0.9</span></b></span><input type="range" id="cd" min="0" max="3" step="0.05" value="0.9"></label><label class="ctl"><span class="lab">Efficiency<b><span id="effV">25</span> %</b></span><input type="range" id="eff" min="5" max="95" step="5" value="25"></label><div class="row"><button class="btn pri" id="play">Pause</button></div>
+    <p class="hint">Every control works while the simulation is running — drag one mid-run and
+    watch the graph bend.</p></div>
+</div>
+<div class="ros"><div class="ro"><div class="k">Driving force</div><div class="v" id="ro1">—</div></div><div class="ro"><div class="k">Useful power</div><div class="v" id="ro2">—</div></div><div class="ro"><div class="k">Input power</div><div class="v" id="ro3">—</div></div><div class="ro"><div class="k">Wasted power</div><div class="v" id="ro4">—</div></div><div class="ro"><div class="k">Drag force</div><div class="v" id="ro5">—</div></div><div class="ro"><div class="k">mg sin θ</div><div class="v" id="ro6">—</div></div></div>
+<p class="sec">Graphs <span>— swept across every speed — the dashed line marks the speed you have set</span></p><div class="gstage"><canvas id="g"></canvas></div><div class="chips"><label class="chip"><input type="checkbox" id="g1" checked><span class="sw" style="background:var(--green)"></span><span class="lb" id="g1L">total useful power (kW)</span></label><label class="chip"><input type="checkbox" id="g2" checked><span class="sw" style="background:var(--red)"></span><span class="lb" id="g2L">power against drag (kW)</span></label><label class="chip"><input type="checkbox" id="g3" checked><span class="sw" style="background:var(--purple)"></span><span class="lb" id="g3L">power against gravity (kW)</span></label></div><p class="sec">The equations behind it <span>— numbers update live as you move the sliders</span></p><div class="eqwrap"><div class="eq"><h4>1 · What power actually is</h4><div class="fm"><div>P = W/t — the rate of doing work, in watts</div><div>and since W = Fs, P = Fs/t = <b>Fv</b></div><div>F = <span class="num" data-k="p_F"></span> N at v = <span class="num" data-k="p_v"></span> m s⁻¹</div><div>so P = <span class="num" data-k="p_use"></span> kW</div></div><p class="why">P = Fv is the version worth memorising, because most questions give you a steady speed rather than a time. It also says something useful about cars: at a fixed engine power, the available force falls as the speed rises, which is why you change down to accelerate or climb.</p></div><div class="eq"><h4>2 · The force you have to supply</h4><div class="fm"><div>at constant speed the resultant is zero, so driving force = everything resisting</div><div>gravity component: mg sin θ = <span class="num" data-k="p_g"></span> N</div><div>drag: cv² = <span class="num" data-k="p_d"></span> N</div><div>total F = <span class="num" data-k="p_F"></span> N</div></div><p class="why">Constant speed does not mean no force — it means the forces <i>balance</i>. On the flat the engine fights drag alone; on a hill it fights drag plus the component of weight down the slope. Set the angle to zero and the purple arrow disappears entirely.</p></div><div class="eq"><h4>3 · Why top speed is so expensive</h4><div class="fm"><div>drag grows as v², so the power to beat it grows as v³</div><div>doubling the speed multiplies the useful power by <span class="num" data-k="p_dbl"></span>×</div></div><p class="why">This is the single most important consequence of P = Fv. Against drag alone, going twice as fast needs eight times the power — which is why a car that cruises happily at 100 km/h needs an enormous engine for 200, and why cyclists care so much about their riding position.</p></div><div class="eq"><h4>4 · Efficiency</h4><div class="fm"><div>η = useful output ÷ total input</div><div><span class="num" data-k="p_use"></span> kW ÷ <span class="num" data-k="p_in"></span> kW = <span class="num" data-k="p_eff"></span>%</div><div>wasted as heat and sound: <span class="num" data-k="p_w"></span> kW</div></div><p class="why">Efficiency is a ratio, so it has no units and can never exceed 1. A petrol engine manages around 25%, which means three quarters of the fuel's energy leaves as heat before it ever reaches the wheels. The Sankey diagram makes the scale of that waste hard to ignore.</p></div></div>
+<p class="note"><b>Try this:</b> leave the incline at zero so drag is the only thing to beat, then watch the green curve on the graph. It is not a straight line — it is a cubic, because drag grows as v² and power is that times v again. Double the speed from 15 to 30 and the power needed goes up roughly eightfold. Now raise the incline: the purple line is the gravity contribution and it <i>is</i> straight, since mg sin θ does not change with speed. The Sankey shows how little of the input ever reaches the road at a realistic 25% efficiency.</p>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const gv=document.getElementById('g'), gc=gv?gv.getContext('2d'):null;
+let W=0,H=0,GW=0,GH=0,DPR=1,playing=false,last=0;
+let D=cx;                       // active drawing context for the helpers below
+const CS=getComputedStyle(document.documentElement);
+function C(n){return CS.getPropertyValue('--'+n).trim()||'#888'}
+let COL={};
+function theme(){COL={ink:C('ink'),mute:C('mute'),line:C('line'),grid:C('grid'),red:C('red'),
+ blue:C('blue'),green:C('green'),orange:C('orange'),purple:C('purple'),fill:C('fill'),
+ fill2:C('fill2'),panel:C('panel'),bg:C('bg'),good:C('good'),bad:C('bad'),accent:C('accent')}}
+theme();
+function fit(){const r=cv.getBoundingClientRect();DPR=Math.min(window.devicePixelRatio||1,2);
+ W=r.width;H=r.height;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+ cx.setTransform(DPR,0,0,DPR,0,0);
+ if(gv){const q=gv.getBoundingClientRect();GW=q.width;GH=q.height;
+  gv.width=Math.round(GW*DPR);gv.height=Math.round(GH*DPR);
+  gc.setTransform(DPR,0,0,DPR,0,0)}}
+addEventListener('resize',()=>{fit()});
+if(window.matchMedia)matchMedia('(prefers-color-scheme:dark)').addEventListener('change',theme);
+function line(x1,y1,x2,y2,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;
+ if(dash)D.setLineDash(dash);D.beginPath();D.moveTo(x1,y1);D.lineTo(x2,y2);D.stroke();D.restore()}
+function arrow(x1,y1,x2,y2,col,w,hd){w=w||3;hd=hd||8+w;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+ if(L<1.5)return;const ux=dx/L,uy=dy/L,bx=x2-ux*hd,by=y2-uy*hd;
+ D.save();D.strokeStyle=col;D.fillStyle=col;D.lineWidth=w;D.lineCap='round';
+ D.beginPath();D.moveTo(x1,y1);D.lineTo(bx,by);D.stroke();
+ D.beginPath();D.moveTo(x2,y2);D.lineTo(bx-uy*hd*.42,by+ux*hd*.42);
+ D.lineTo(bx+uy*hd*.42,by-ux*hd*.42);D.closePath();D.fill();D.restore()}
+function dot(x,y,r,col){D.save();D.fillStyle=col;D.beginPath();D.arc(x,y,r,0,7);D.fill();D.restore()}
+function ring(x,y,r,col,w,dash){D.save();D.strokeStyle=col;D.lineWidth=w||2;
+ if(dash)D.setLineDash(dash);D.beginPath();D.arc(x,y,r,0,7);D.stroke();D.restore()}
+function txt(x,y,t,col,sz,al,bold){D.save();D.fillStyle=col||COL.ink;
+ D.font=(bold?'600 ':'')+(sz||12)+'px ui-sans-serif,system-ui,sans-serif';
+ D.textAlign=al||'left';D.textBaseline='alphabetic';D.fillText(t,x,y);D.restore()}
+function poly(pts,col,w,dash,close){if(pts.length<2)return;D.save();D.strokeStyle=col;
+ D.lineWidth=w||2;D.lineJoin='round';if(dash)D.setLineDash(dash);D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ if(close)D.closePath();D.stroke();D.restore()}
+function fillPoly(pts,col){if(pts.length<3)return;D.save();D.fillStyle=col;D.beginPath();
+ D.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)D.lineTo(pts[i][0],pts[i][1]);
+ D.closePath();D.fill();D.restore()}
+function rect(x,y,w,h,fill,stroke,r){r=r||0;D.save();D.beginPath();
+ if(D.roundRect)D.roundRect(x,y,w,h,r);else D.rect(x,y,w,h);
+ if(fill){D.fillStyle=fill;D.fill()}if(stroke){D.strokeStyle=stroke;D.lineWidth=2;D.stroke()}D.restore()}
+function arc2(x,y,r,a1,a2,col,w){D.save();D.strokeStyle=col;D.lineWidth=w||1.5;D.beginPath();
+ D.arc(x,y,r,a1,a2);D.stroke();D.restore()}
+const f=(x,n)=>{n=n===undefined?1:n;if(!isFinite(x))return '—';
+ return (Math.abs(x)<5e-7?0:x).toFixed(n)};
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sig(x,n){n=n||3;if(!isFinite(x))return '—';
+ const a=Math.abs(x); if(a<1e-9)return '0';
+ if(a>=1e5||a<1e-3){const q=x.toExponential(2).split('e');
+  return q[0]+'×10'+q[1].replace('+','').split('').map(c=>SUP[c]||c).join('')}
+ return x.toPrecision(n).replace(/(\.\d*?)0+$/,'$1').replace(/\.$/,'')}
+function $(id){return document.getElementById(id)}
+function S(id,t){const e=$(id);if(e)e.textContent=t;
+ const l=document.querySelectorAll('[data-k="'+id+'"]');
+ for(let i=0;i<l.length;i++)l[i].textContent=t}
+function bind(id,fn){const el=$(id);if(!el)return;const h=()=>{fn(el);};
+ el.addEventListener('input',h);el.addEventListener('change',h)}
+function isOn(id){const e=$(id);return e?e.checked:false}
+function setPlay(p){playing=p;const b=$('play');if(b)b.textContent=p?'Pause':'Play'}
+function nice(v){if(!(v>0))return 1;const e=Math.pow(10,Math.floor(Math.log10(v))),n=v/e;
+ return (n<1.5?1:n<3.5?2:n<7.5?5:10)*e}
+function axfmt(v,stp){if(Math.abs(v)<stp*1e-6)return '0';
+ const d=Math.max(0,Math.min(4,-Math.floor(Math.log10(stp))+(stp<1?1:0)));
+ return v.toFixed(d)}
+// ---- time-series plot on the second canvas -------------------------------
+// series: [{name, col, unit, pts:[[t,v],…]}]  (already filtered to visible ones)
+function plotXY(series,xmax,xlabel,cur){
+ if(!gc)return; D=gc; gc.clearRect(0,0,GW,GH);
+ const m={l:56,r:74,t:16,b:46}, pw=Math.max(10,GW-m.l-m.r), ph=Math.max(10,GH-m.t-m.b);
+ let lo=0,hi=0,any=false;
+ for(const s of series)for(const p of s.pts){if(!isFinite(p[1]))continue;
+   if(p[1]<lo)lo=p[1];if(p[1]>hi)hi=p[1];any=true}
+ if(!any){txt(m.l+pw/2,m.t+ph/2,'press Play to record a trace',COL.mute,12.5,'center');
+   D=cx;return}
+ if(hi-lo<1e-9){hi=lo+1;lo-=1}
+ const pad=(hi-lo)*0.14; lo-=pad; hi+=pad;
+ const XM=Math.max(xmax,0.5);
+ const X=t=>m.l+t/XM*pw, Y=v=>m.t+ph-(v-lo)/(hi-lo)*ph;
+ const ys=nice((hi-lo)/4.2);
+ for(let v=Math.ceil(lo/ys)*ys;v<=hi;v+=ys){const yy=Y(v);
+   if(yy<m.t-1||yy>m.t+ph+1)continue;
+   const zero=Math.abs(v)<ys*1e-6;
+   line(m.l,yy,m.l+pw,yy,zero?COL.line:COL.grid,zero?1.8:1);
+   txt(m.l-8,yy+4,axfmt(v,ys),COL.mute,10.5,'right')}
+ const xs=nice(XM/5);
+ for(let t=0;t<=XM+1e-9;t+=xs){const xx=X(t);if(xx>m.l+pw+1)break;
+   line(xx,m.t,xx,m.t+ph,COL.grid,1);
+   txt(xx,m.t+ph+18,axfmt(t,xs),COL.mute,10.5,'center')}
+ line(m.l,m.t,m.l,m.t+ph,COL.line,1.5);
+ txt(m.l+pw/2,m.t+ph+38,xlabel||'time / s',COL.mute,11,'center');
+ if(cur!==undefined&&cur!==null&&isFinite(cur)&&cur<=XM)
+   line(X(cur),m.t,X(cur),m.t+ph,COL.mute,1.2,[4,4]);
+ const tags=[];
+ for(const s of series){
+   if(s.pts.length<2)continue;
+   poly(s.pts.map(p=>[X(p[0]),Y(p[1])]),s.col,2.2);
+   const e=s.pts[s.pts.length-1];
+   dot(X(e[0]),Y(e[1]),3.4,s.col);
+   tags.push({y:Math.max(m.t+9,Math.min(m.t+ph,Y(e[1])+4)),
+              t:sig(e[1],3)+(s.unit?(' '+s.unit):''),c:s.col})}
+ tags.sort((a,b)=>a.y-b.y);
+ for(let i=1;i<tags.length;i++)if(tags[i].y<tags[i-1].y+14)tags[i].y=tags[i-1].y+14;
+ const over=tags.length?tags[tags.length-1].y-(m.t+ph):0;
+ if(over>0)for(const q of tags)q.y-=over;
+ for(const q of tags)txt(m.l+pw+7,q.y,q.t,q.c,11);
+ D=cx;
+}
+(function(){const pv=document.getElementById('pop');if(pv)pv.href=location.href})();
+function frame(t){const dt=Math.min((t-last)/1000,0.04);last=t;
+ if(playing&&typeof step==='function')step(dt);draw();requestAnimationFrame(frame)}
+
+
+const G=9.81;
+let P={m:1200,v:20,th:0,cd:0.9,eff:25}, ph=0;
+function grav(){return P.m*G*Math.sin(P.th*Math.PI/180)}
+function dragF(vv){return P.cd*vv*vv}
+function Fd(vv){return grav()+dragF(vv)}
+function Puse(vv){return Fd(vv)*vv}
+function Pin(vv){return Puse(vv)/(P.eff/100)}
+function step(dt){ph+=dt*P.v*0.035; if(ph>1)ph-=1}
+function draw(){cx.clearRect(0,0,W,H);
+  const a=P.th*Math.PI/180;
+  const x0=38, y0=H*0.40, ln0=Math.min(W*0.62,330);
+  const ex=x0+ln0*Math.cos(a), ey=y0-ln0*Math.sin(a);
+  fillPoly([[x0,y0],[ex,ey],[ex,y0]],COL.fill);
+  poly([[x0,y0],[ex,ey]],COL.ink,3);
+  if(P.th>0.5){line(x0,y0,x0+88,y0,COL.grid,1.2,[5,4]);
+    arc2(x0,y0,70,-a,0,COL.ink,1.5);
+    txt(x0+80,y0-14,P.th+'°',COL.ink,12.5,'left',true)}
+  const fr=0.16+0.62*ph;
+  const cxp=x0+ln0*fr*Math.cos(a), cyp=y0-ln0*fr*Math.sin(a);
+  cx.save();cx.translate(cxp,cyp);cx.rotate(-a);
+  rect(-30,-28,60,22,COL.fill2,COL.ink,4);
+  rect(-17,-40,34,14,COL.fill2,COL.ink,3);
+  dot(-16,-4,6.5,COL.mute); dot(16,-4,6.5,COL.mute);
+  cx.restore();
+  const nx=-Math.sin(a), ny=-Math.cos(a), ux=Math.cos(a), uy=-Math.sin(a);
+  const ox=cxp+nx*30, oy=cyp+ny*30;
+  const big=Math.max(Fd(P.v),1), sc=Math.min(W*0.20,96)/big;
+  arrow(ox,oy,ox+ux*Fd(P.v)*sc,oy+uy*Fd(P.v)*sc,COL.green,3);
+  const d1=dragF(P.v)*sc, d2=grav()*sc;
+  arrow(ox,oy,ox-ux*d1,oy-uy*d1,COL.red,2.6);
+  if(grav()>1)arrow(ox-ux*d1,oy-uy*d1,ox-ux*(d1+d2),oy-uy*(d1+d2),COL.purple,2.6);
+  txt(38,y0-H*0.30,'resisting forces, laid end to end,',COL.mute,10.5,'left');
+  txt(38,y0-H*0.30+14,'equal the driving force',COL.mute,10.5,'left');
+  arrow(cxp+nx*62,cyp+ny*62,cxp+nx*62+Math.max(24,Math.min(76,P.v*2.2)),cyp+ny*62,COL.blue,2.2);
+  txt(cxp+nx*62,cyp+ny*62-8,'v = '+f(P.v,0)+' m s⁻¹ (constant)',COL.blue,11,'left');
+  const ly=y0+34;
+  const leg=[[COL.green,'driving '+f(Fd(P.v),0)+' N'],[COL.red,'drag cv² '+f(dragF(P.v),0)+' N']];
+  if(grav()>1)leg.push([COL.purple,'mg sinθ '+f(grav(),0)+' N']);
+  leg.forEach((q,i)=>{const lx=38+i*Math.min(148,(W-70)/leg.length);
+    dot(lx+4,ly-4,4.5,q[0]); txt(lx+13,ly,q[1],q[0],10.5)});
+  // sankey across the bottom
+  const sx=38, sw=Math.max(140,W-sx-150), sy=H*0.63, sh=Math.min(66,H*0.17), nk=52;
+  const frU=Math.max(0.03,Math.min(P.eff/100,0.97));
+  fillPoly([[sx,sy],[sx+nk,sy],[sx+nk,sy+sh],[sx,sy+sh]],'#aed6f1');
+  fillPoly([[sx+nk,sy],[sx+sw,sy+6],[sx+sw,sy+6+sh*frU],[sx+nk,sy+sh*frU]],'#a9dfbf');
+  fillPoly([[sx+nk,sy+sh*frU],[sx+sw,sy+30+sh*frU],[sx+sw,sy+30+sh],[sx+nk,sy+sh]],'#f5b7b1');
+  txt(sx,sy-9,'input '+f(Pin(P.v)/1000,1)+' kW',COL.blue,11.5,'left',true);
+  txt(sx+sw+7,sy+10+sh*frU/2,'useful '+f(Puse(P.v)/1000,1)+' kW',COL.green,11.5);
+  txt(sx+sw+7,sy+32+sh*(1+frU)/2,'wasted '+f((Pin(P.v)-Puse(P.v))/1000,1)+' kW',COL.red,11.5);
+  txt(sx,sy+sh+46,'efficiency = useful ÷ input = '+P.eff+'%',COL.ink,12.5,'left',true);
+  S('ro1',f(Fd(P.v),0)+' N'); S('ro2',f(Puse(P.v)/1000,2)+' kW');
+  S('ro3',f(Pin(P.v)/1000,2)+' kW'); S('ro4',f((Pin(P.v)-Puse(P.v))/1000,2)+' kW');
+  S('ro5',f(dragF(P.v),0)+' N'); S('ro6',f(grav(),0)+' N');
+  S('p_m',f(P.m,0)); S('p_v',f(P.v,0)); S('p_th',String(P.th)); S('p_c',f(P.cd,2));
+  S('p_g',f(grav(),0)); S('p_d',f(dragF(P.v),0)); S('p_F',f(Fd(P.v),0));
+  S('p_use',f(Puse(P.v)/1000,2)); S('p_in',f(Pin(P.v)/1000,2));
+  S('p_eff',String(P.eff)); S('p_w',f((Pin(P.v)-Puse(P.v))/1000,2));
+  S('p_dbl',f(Puse(2*P.v)/Math.max(Puse(P.v),1e-9),1));
+  const pts=[[],[],[]];
+  for(let u=0;u<=42;u+=0.5){pts[0].push([u,Puse(u)/1000]);
+    pts[1].push([u,dragF(u)*u/1000]); pts[2].push([u,grav()*u/1000])}
+  const want=[['g1',0,'kW',COL.green],['g2',1,'kW',COL.red],['g3',2,'kW',COL.purple]];
+  const ser=[];
+  for(const q of want) if(isOn(q[0])) ser.push({col:q[3],unit:q[2],pts:pts[q[1]]});
+  plotXY(ser,42,'speed / m s⁻¹',P.v);
+}
+['m','v','th','cd','eff'].forEach(id=>bind(id,el=>{P[id]=+el.value;
+  $(id+'V').textContent=(id==='cd')?(+el.value).toFixed(2):el.value}));
+$('play').onclick=()=>setPlay(!playing);
+setPlay(true);
+
+fit();requestAnimationFrame(frame);
+</script>
+</body></html>
